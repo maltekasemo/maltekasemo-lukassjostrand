@@ -18,5 +18,11 @@ def distance_between_stops(some_dict, stop1, stop2):
   distance = R * c
   
   return distance 
+ 
+from https://www.movable-type.co.uk/scripts/latlong.html
+  
+a = sin²(Δφ/2) + cos φ1 ⋅ cos φ2 ⋅ sin²(Δλ/2)
+c = 2 ⋅ atan2( √a, √(1−a) )
+d = R ⋅ c
 
  
