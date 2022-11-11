@@ -1,28 +1,64 @@
-# MKLS
-Work done by Lukas Sjöstrand and Malte Kasemo
+import csv
+import json
+import math
+import sys
+import csv
+from Queries import *
 
-def distance_between_stops(some_dict, stop1, stop2):
-  from math import sin, cos, sqrt, atan2
+STOPS_JSON_FILE = 'venv/tramstops.json'
+TRAMLINES_TSV_FILE = 'venv/tramlines.tsv'
 
-  R = 6373.0
 
-  lat1 = 52.2296756
-  lon1 = 21.0122287
-  lat2 = 52.406374
-  lon2 = 16.9251681
+def reading_tsv_file(text_file):
+    dict_of_lines = {}
+    stops_in_line = {}
+    with open(text_file) as file:
+        rows = csv.reader(file, delimiter="\t")
+        for line in rows:
+            if not line:
+                dict_of_lines[temp_var] = stops_in_line.copy()
+                stops_in_line = {}
+            elif len(line[0]) <= 3 and len(line[0]) > 0:
+                temp_var = line[0].rstrip(":")
+            else:
+                try:
+                        the_split = line[0].rsplit(" ", 1)
+                        name = (the_split[0]).rstrip()
+                        stops_in_line[name] = the_split[1]
+                except IndexError:
+                    pass
+    return dict_of_lines
 
-  lon_diff = lon2 - lon1
-  lat_diff = lat2 - lat1
-  a = (sin(dlat/2))**2 + cos(lat1) * cos(lat2) * (sin(dlon/2))**2
-  c = 2 * atan2(sqrt(a), sqrt(1-a))
-  distance = R * c
-  
-  return distance 
- 
-from https://www.movable-type.co.uk/scripts/latlong.html
-  
-a = sin²(Δφ/2) + cos φ1 ⋅ cos φ2 ⋅ sin²(Δλ/2)
-c = 2 ⋅ atan2( √a, √(1−a) )
-d = R ⋅ c
+def creating_lines(text_file):
+    dict_of_lines = reading_tsv_file(text_file)
+    print({line: dict_of_lines[line] for line in dict_of_lines})
 
- 
+"""def creating_lines(text_file):
+    dict_of_lines = {}
+    stops_in_line = []
+    with open(text_file) as file:
+        rows = csv.reader(file, delimiter="\t")
+        for line in rows:
+            if not line:
+                dict_of_lines[temp_var] = stops_in_line.copy()
+                stops_in_line = []
+            elif len(line[0]) <= 3 and len(line[0]) > 0:
+                temp_var = line[0].strip(':')
+            else:
+                the_split = line[0].rsplit(" ", 1)
+                name = (the_split[0]).rstrip()
+                if len(name) > 3:
+                    stops_in_line.append(name)
+    return(dict_of_lines)"""
+
+def build_trams_stops(jsonobject):
+    return {stop: {"lat": float(jsonobject[stop]["position"][0]), "lon": float(jsonobject[stop]["position"][1])} for stop in jsonobject}
+
+if __name__ == '__main__':
+    #dict_of_lines = creating_lines(TRAMLINES_TSV_FILE)
+    creating_lines(TRAMLINES_TSV_FILE)
+    #with open(STOPS_JSON_FILE, 'r') as infile:
+        #jsonobject = json.load(infile)
+        #positions = build_trams_stops(jsonobject)
+    #answer = Queries.lines_between_stops(dict_of_lines, "Östra Sjukhuset", "Mölndals Innerstad")
+    #print(answer)
