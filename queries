@@ -14,8 +14,26 @@ class Queries:
             return lines
 
     @classmethod
-    def times_between_stops(cls, somedict, line, stop1, stop2):
-        pass
+        def times_between_stops(cls, somedict1, somedict2, line, stop1, stop2):
+        stations_of_a_line = somedict1[line]
+
+        if stop1 in stations_of_a_line and stop2 in stations_of_a_line:
+            start_index = stations_of_a_line.index(stop1)
+            end_index = stations_of_a_line.index(stop2)
+            stations_between_stops = []
+            for i in range(end_index - start_index + 1):
+                stations_between_stops.append(stations_of_a_line[i+start_index])
+
+        time = 0
+        times =[]
+        i = 1
+        try:
+            for stop in stations_between_stops:
+                time += somedict2[stop][stations_between_stops[i]]
+                times.append(somedict2[stop][stations_between_stops[i]])
+                i+=1
+        except IndexError:
+            return time
 
     @classmethod
     def distance_between_stops(cls, somedict, stop1, stop2):
