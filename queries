@@ -1,0 +1,36 @@
+from math import sin, cos, sqrt, atan2, pi
+
+class Queries:
+    @classmethod
+    def lines_via_stop(cls, somedict, stop):
+        return [line for line in somedict if stop in somedict[line]]
+
+    @classmethod
+    def lines_between_stops(cls, somedict, stop1, stop2):
+        lines = [line for line in somedict if stop1 in somedict[line] and stop2 in somedict[line]]
+        if not lines:
+            return (f"Det finns inga linjer mellan {stop1} och {stop2}")
+        else:
+            return lines
+
+    @classmethod
+    def times_between_stops(cls, somedict, line, stop1, stop2):
+        pass
+
+    @classmethod
+    def distance_between_stops(cls, somedict, stop1, stop2):
+        lon1 = somedict[stop1]["lon"] * pi/180
+        lon2 = somedict[stop2]["lon"] * pi/180
+        lat1 = somedict[stop1]["lat"] * pi/180
+        lat2 = somedict[stop2]["lat"] * pi/180
+
+        R = 6373.0
+
+        lon_diff = abs(lon1 - lon2)
+        lat_diff = abs(lat1 - lat2)
+
+        a = (sin(lat_diff / 2)) ** 2 + cos(lon1) * cos(lon2) * (sin(lon_diff / 2)) ** 2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        distance = R * c
+
+        return distance
