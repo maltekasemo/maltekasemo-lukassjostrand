@@ -31,34 +31,59 @@ def reading_tsv_file(text_file):
 
 def creating_lines(text_file):
     dict_of_lines = reading_tsv_file(text_file)
-    print({line: dict_of_lines[line] for line in dict_of_lines})
+    return ({line: [stop for stop in dict_of_lines[line]] for line in dict_of_lines})
 
-"""def creating_lines(text_file):
-    dict_of_lines = {}
-    stops_in_line = []
-    with open(text_file) as file:
-        rows = csv.reader(file, delimiter="\t")
-        for line in rows:
-            if not line:
-                dict_of_lines[temp_var] = stops_in_line.copy()
-                stops_in_line = []
-            elif len(line[0]) <= 3 and len(line[0]) > 0:
-                temp_var = line[0].strip(':')
-            else:
-                the_split = line[0].rsplit(" ", 1)
-                name = (the_split[0]).rstrip()
-                if len(name) > 3:
-                    stops_in_line.append(name)
-    return(dict_of_lines)"""
+def creating_neighbours(text_file):
+    dict_of_lines = creating_lines(text_file)
+    my_dict = {}
+    neighbours = []
+    for line in dict_of_lines:
+        for i in range(0, len(dict_of_lines[line])-1):
+            my_dict[dict_of_lines[line][i]] = []
+
+    for line in dict_of_lines:
+        for i in range(len(dict_of_lines[line])-1):
+            neighbours.append(dict_of_lines[line][i+1])
+            my_dict[dict_of_lines[line][i]].append(neighbours[0])
+            neighbours = []
+
+    for line in dict_of_lines:
+        for i in range(0, len(dict_of_lines[line])-1):
+            new = set(my_dict[dict_of_lines[line][i]])
+            my_dict[dict_of_lines[line][i]] = new
+
+
+    station_and_time = {}
+    for stop in my_dict:
+        for target in my_dict[stop]:
+            station_and_time[target] = time_distance(TRAMLINES_TSV_FILE, stop, target)
+        my_dict[stop] = station_and_time
+        station_and_time = {}
+    print(my_dict)
+
+def time_distance(file, stop1, stop2):
+    dict = reading_tsv_file(file)
+    for line in dict:
+        try:
+            minutes1 = convert(dict[line][stop1])
+            minutes2 = convert(dict[line][stop2])
+            return abs(minutes1 - minutes2)
+        except KeyError:
+            continue
+
+def convert(time):
+    split = time.split(":")
+    return int(split[1])
 
 def build_trams_stops(jsonobject):
     return {stop: {"lat": float(jsonobject[stop]["position"][0]), "lon": float(jsonobject[stop]["position"][1])} for stop in jsonobject}
 
 if __name__ == '__main__':
     #dict_of_lines = creating_lines(TRAMLINES_TSV_FILE)
-    creating_lines(TRAMLINES_TSV_FILE)
+    #creating_neighbours(TRAMLINES_TSV_FILE)
     #with open(STOPS_JSON_FILE, 'r') as infile:
         #jsonobject = json.load(infile)
         #positions = build_trams_stops(jsonobject)
-    #answer = Queries.lines_between_stops(dict_of_lines, "Östra Sjukhuset", "Mölndals Innerstad")
-    #print(answer)
+        #print(positions)
+    #answer = Queries.lines_between_stops(dict_of_lines, "Grönsakstorget", "Svingeln")
+    #print(dict_of_lines)
