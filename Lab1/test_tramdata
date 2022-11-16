@@ -1,1 +1,55 @@
+from tramdata import *
 
+infile = 'tramnetwork.json'
+with open(infile, 'r') as data:
+    tramworks = json.load(data)
+
+def all_tram_lines_included():
+    all_lines = [line for line in tramworks['lines']]
+
+    for line in tramworks['lines']:
+        if line in all_lines:
+            all_lines.remove(line)
+
+    if all_lines:
+        return False
+    else:
+        return True
+
+def same_stops_in_line():
+    all_stops_in_line = {line: [stop for stop in tramworks['lines'][line]] for line in tramworks['lines']}
+
+    if all_stops_in_line == tramworks['lines']:
+        return True
+    else:
+        return False
+
+def all_distances_less_than_20km():
+    distances = []
+    for stop1 in tramworks['stops']:
+        for stop2 in tramworks['stops']:
+            distance = distance_between_stops(tramworks['stops'], stop1, stop2)
+            if distance not in distances:
+                distances.append(distance)
+    if max(distances) > 20:
+        return False
+    else:
+        return True
+
+def time_from_a_to_b_same_as_reverse():
+    for line in tramworks['lines']:
+        for i in range(len(tramworks['lines'][line])):
+            for y in range(i, len(tramworks['lines'][line])):
+                if times_between_stops(tramworks, line, tramworks['lines'][line][i], tramworks['lines'][line][y]) \
+                        != times_between_stops(tramworks, line, tramworks['lines'][line][y], tramworks['lines'][line][i]):
+                    return False
+    return True
+
+def do_all_tests():
+    print(all_tram_lines_included())
+    print(same_stops_in_line())
+    print(all_distances_less_than_20km())
+    print(time_from_a_to_b_same_as_reverse())
+
+if __name__ == '__main__':
+    do_all_tests()
