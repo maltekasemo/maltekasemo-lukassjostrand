@@ -1,55 +1,63 @@
+import unittest
 from tramdata import *
 
-infile = 'tramnetwork.json'
-with open(infile, 'r') as data:
-    tramworks = json.load(data)
+TRAM_FILE = 'tramnetwork.json'
 
-def all_tram_lines_included():
-    all_lines = [line for line in tramworks['lines']]
+class TestTramData(unittest.TestCase):
 
-    for line in tramworks['lines']:
-        if line in all_lines:
-            all_lines.remove(line)
+    def setUp(self):
+        with open(TRAM_FILE) as trams:
+            tramdict = json.loads(trams.read())
+            self.stopdict = tramdict['stops']
+            self.linedict = tramdict['lines']
+            self.all = tramdict
 
-    if all_lines:
-        return False
-    else:
-        return True
+    def test_stops_exist(self):
+        stopset = {stop for line in self.linedict for stop in self.linedict[line]}
+        for stop in stopset:
+            self.assertIn(stop, self.stopdict, msg = stop + ' not in stopdict')
 
-def same_stops_in_line():
-    all_stops_in_line = {line: [stop for stop in tramworks['lines'][line]] for line in tramworks['lines']}
+    def test_all_tram_lines_included(self):
+        with open('tramlines.tsv', 'r') as data:
+            rows = csv.reader(data, delimiter = "\t")
+            for line in rows:
+                if line:
+                    if line[0][0].isdigit():
+                        if line[0][0] not in self.linedict:
+                            self.assertIn(line[0][0], self.linedict, msg=line[0][0] + ' not in linedict')
 
-    if all_stops_in_line == tramworks['lines']:
-        return True
-    else:
-        return False
+    def test_all_stops_in_line(self):
+        with open('tramlines.tsv', 'r') as data:
+            rows = csv.reader(data, delimiter = "\t")
+            for line in rows:
+                if line:
+                    if line[0][0].isdigit():
+                        line_nr = line[0].split(':')[0]
+                    else:
+                        stop = line[0].rsplit(" ", 1)[0].rstrip()
+                        if stop in self.linedict[line_nr]:
+                            pass
+                        else:
+                            self.assertIn(stop, self.linedict[line_nr], msg=stop + ' not in ' + line_nr)
 
-def all_distances_less_than_20km():
-    distances = []
-    for stop1 in tramworks['stops']:
-        for stop2 in tramworks['stops']:
-            distance = distance_between_stops(tramworks['stops'], stop1, stop2)
-            if distance not in distances:
-                distances.append(distance)
-    if max(distances) > 20:
-        return False
-    else:
-        return True
+    def test_all_distances_less_than_20_km(self):
+        for stop1 in self.stopdict:
+            for stop2 in self.stopdict:
+                distance = distance_between_stops(self.stopdict, stop1, stop2)
+                if distance > 20:
+                    self.assertIn([stop1, stop2], self.stopdict, msg='distance from ' +stop1+ 'to' +stop2+ ' greater than 20km')
 
-def time_from_a_to_b_same_as_reverse():
-    for line in tramworks['lines']:
-        for i in range(len(tramworks['lines'][line])):
-            for y in range(i, len(tramworks['lines'][line])):
-                if times_between_stops(tramworks, line, tramworks['lines'][line][i], tramworks['lines'][line][y]) \
-                        != times_between_stops(tramworks, line, tramworks['lines'][line][y], tramworks['lines'][line][i]):
-                    return False
-    return True
 
-def do_all_tests():
-    print(all_tram_lines_included())
-    print(same_stops_in_line())
-    print(all_distances_less_than_20km())
-    print(time_from_a_to_b_same_as_reverse())
+    def test_if_time_from_a_to_b_same_as_time_from_b_to_a(self):
+        for line in self.linedict:
+            for i in range(len(self.linedict[line]) - 1):
+                for y in range(i, len(self.linedict[line])):
+                    if times_between_stops(self.all, line, self.linedict[line][i], self.linedict[line][y]) \
+                            != times_between_stops(self.all, line, self.linedict[line][y],
+                                                   self.linedict[line][i]):
+                        self.assertIn([self.linedict[line][i], self.linedict[line][y]], self.stopdict, msg='time from ' + self.linedict[line][i]
+                                    +'to ' +self.linedict[line][y]+ ' not same as reversed')
+
 
 if __name__ == '__main__':
-    do_all_tests()
+    unittest.main()
