@@ -6,7 +6,7 @@ import csv
 STOPS_JSON_FILE = 'tramstops.json'
 TRAMLINES_TSV_FILE = 'tramlines.tsv'
 
-def reading_json_file():
+def get_open_json_file():
     infile = 'tramnetwork.json'
     with open(infile, 'r') as data:
         tramworks = json.load(data)
@@ -16,97 +16,104 @@ def reading_json_file():
 
 def dialogue():
     running = True
-    tramworks = reading_json_file()
+    print("The following formats are functioning:\nvia <stop>\nbetween <stop1> and <stop2>"
+            "\ntime with <line> from <stop1> to <stop2>\ndistance from <stop1> to <stop2>\nquit")
     while running:
-        input_string = input("The following formats are functioning:\nvia <stop>\nbetween <stop1> and <stop2>"
-                             "\ntime with <line> from <stop1> to <stop2>\ndistance from <stop1> to <stop2>\nquit\n> ")
+        input_string = input("> ")
         if input_string == 'quit':
             print("Bye bye!")
             running = False
             continue
         else:
-            answer = answer_query(input_string, tramworks)
+            if "via" in input_string:
+                query = "lines passing stop"
+                answer = answer_query(input_string, query)
+            elif 'between' in input_string and 'and' in input_string:
+                query = 'lines between stops'
+                answer = answer_query(input_string, query)
+            elif 'time with' in input_string and 'from' in input_string and 'to' in input_string:
+                query = 'time from a to b'
+                answer = answer_query(input_string, query)
+            elif 'distance from' in input_string and 'to' in input_string:
+                query = 'distance from a to b'
+                answer = answer_query(input_string, query)
+            else:
+                print("Sorry, try again!")
+                answer = None
         if answer:
             print(answer)
-        else:
-            print("Sorry, try again!")
 
 ##-----------------------------ADAPTING STRING AND ACTIVIATING CALCULATING METHODS-------------------------------
 
-def answer_query(input_string, tramworks):
-    if "via" in input_string:
-        station = input_string.lstrip(' via ')
-        station.lstrip().rstrip()
-        answer = lines_via_stop(tramworks['lines'], station)
-    elif 'between' in input_string and 'and' in input_string:
+def answer_query(input_string, query):
+    tramnetwork = get_open_json_file()
+    if query == 'lines passing stop':
+        stop = input_string.split('via ')[1]
+        stop.lstrip().rstrip()
+        answer = lines_via_stop(tramnetwork['lines'], stop)
+    elif query == 'lines between stops':
         stop1_and_stop2 = input_string.split('between')[1]
         stops = stop1_and_stop2.split(' and ')
         stop1 = stops[0].lstrip().rstrip()
         stop2 = stops[1].lstrip().rstrip()
-        answer = lines_between_stops(tramworks['lines'], stop1, stop2)
-    elif 'time with' in input_string and 'from' in input_string and 'to' in input_string:
+        answer = lines_between_stops(tramnetwork['lines'], tramnetwork['stops'], stop1, stop2)
+    elif query == 'time from a to b':
         line_and_stops = input_string.lstrip('time with ')
         line = line_and_stops.split('from')[0].lstrip().rstrip()
         stops = line_and_stops.split('from')[1]
         stop1 = stops.split(' to ')[0].lstrip().rstrip()
         stop2 = stops.split(' to ')[1].lstrip().rstrip()
-        answer = f"The time with {line} between {stop1} and {stop2} is {times_between_stops(tramworks, line, stop1, stop2)} minutes"
-    elif 'distance from' in input_string and 'to' in input_string:
+        answer = times_between_stops(tramnetwork, line, stop1, stop2)
+    elif query == 'distance from a to b':
         stop1_and_stop2 = input_string.lstrip('distance from')
         stops = stop1_and_stop2.split(' to ')
         stop1 = stops[0].rstrip().lstrip()
         stop2 = stops[1].rstrip().lstrip()
-        answer = f"There are {distance_between_stops(tramworks['stops'], stop1, stop2)} km between {stop1} and {stop2}"
-    else:
-        answer = None
+        answer = distance_between_stops(tramnetwork['stops'], stop1, stop2)
     return answer
 
 ##-----------------------------CALCULATING METHODS-------------------------------
 
-def lines_via_stop(somedict, stop):
-    try:
-        lines_via_stop = [line for line in somedict if stop in somedict[line]]
-        if not lines_via_stop:
-            return f"No lines via {stop}"
-        else:
-            return f"The following lines passes {stop}: {lines_via_stop}"
-    except KeyError:
-        return "Unknown arguments"
+def lines_via_stop(lines_dict, stop):
+    lines_via_stop = [line for line in lines_dict if stop in lines_dict[line]]
+    if lines_via_stop:
+        return f"The following lines passes {stop}: {lines_via_stop}"
+    else:
+        return "Unknown argument(s)"
 
-def lines_between_stops(somedict, stop1, stop2):
-    try:
-        lines = [line for line in somedict if stop1 in somedict[line] and stop2 in somedict[line]]
-        if not lines:
-            return (f"There are no lines between {stop1} and {stop2}")
-        else:
-            return f" The following lines passes {stop1} and {stop2}: {lines}"
-    except KeyError:
-        return "Unknown arguments"
+def lines_between_stops(lines_dict, positions_dict, stop1, stop2):
+    if stop1 not in positions_dict or stop2 not in positions_dict:
+        return "Unknown argument(s)"
+    lines_between_stops = [line for line in lines_dict if stop1 in lines_dict[line] and stop2 in lines_dict[line]]
+    if lines_between_stops:
+        return f" The following lines passes {stop1} and {stop2}: {lines_between_stops}"
+    else:
+        return f" No lines passes {stop1} and {stop2}"
 
-def times_between_stops(somedict, line, stop1, stop2):
+def times_between_stops(tramnetwork, line, stop1, stop2):
     try:
-        if stop1 in somedict['lines'][line] and stop2 in somedict['lines'][line]:
-            start_index = somedict['lines'][line].index(stop1)
-            end_index = somedict['lines'][line].index(stop2)
-            if start_index > end_index:
-                start_index, end_index = end_index, start_index
-            stations_between_stops = [somedict['lines'][line][i] for i in range(start_index, end_index + 1)]
-        else:
-            return f"{line} does not pass both {stop1} and {stop2}"
+        start_index = tramnetwork['lines'][line].index(stop1)
+        end_index = tramnetwork['lines'][line].index(stop2)
 
+        if start_index > end_index:
+            start_index, end_index = end_index, start_index
+
+        stations_between_stops = [tramnetwork['lines'][line][i] for i in range(start_index, end_index + 1)]
         time = 0
-        for i in range(len(stations_between_stops)-1):
-            time += somedict['times'][stations_between_stops[i]][stations_between_stops[i+1]]
-        return time
-    except KeyError:
-        return "Unknown arguments"
 
-def distance_between_stops(somedict, stop1, stop2):
+        for i in range(len(stations_between_stops)-1):
+            time += tramnetwork['times'][stations_between_stops[i]][stations_between_stops[i + 1]]
+        return time
+
+    except KeyError:
+        return "Unknown argument(s)"
+
+def distance_between_stops(positions_dict, stop1, stop2):
     try:
-        lon1 = somedict[stop1]["lon"] * pi/180
-        lon2 = somedict[stop2]["lon"] * pi/180
-        lat1 = somedict[stop1]["lat"] * pi/180
-        lat2 = somedict[stop2]["lat"] * pi/180
+        lon1 = positions_dict[stop1]["lon"] * pi / 180
+        lon2 = positions_dict[stop2]["lon"] * pi / 180
+        lat1 = positions_dict[stop1]["lat"] * pi / 180
+        lat2 = positions_dict[stop2]["lat"] * pi / 180
 
         R = 6371.0
 
@@ -119,40 +126,39 @@ def distance_between_stops(somedict, stop1, stop2):
         return round(distance, 3)
 
     except KeyError:
-        return "Unknown arguments"
+        return "Unknown argument(s)"
 
 ##-----------------------------READING TEXT-FILE AND ADAPTING TO USAGE-------------------------------
 
 def reading_tsv_file(text_file):
-    dict_of_lines = {}
-    stops_in_line = {}
+    tsv_read = {}
+    stops_and_times_in_line = {}
     with open(text_file) as file:
         rows = csv.reader(file, delimiter="\t")
         for line in rows:
             if not line:
-                dict_of_lines[temp_var] = stops_in_line.copy()
-                stops_in_line = {}
+                tsv_read[temp_var] = stops_and_times_in_line.copy()
+                stops_and_times_in_line = {}
             elif len(line[0]) <= 3 and len(line[0]) > 0:
                 temp_var = line[0].rstrip(":")
             else:
                 try:
                     the_split = line[0].rsplit(" ", 1)
                     name = (the_split[0]).rstrip()
-                    stops_in_line[name] = the_split[1]
+                    stops_and_times_in_line[name] = the_split[1]
                 except IndexError:
                     pass
-        dict_of_lines[temp_var] = stops_in_line.copy()
-    return dict_of_lines
+        tsv_read[temp_var] = stops_and_times_in_line.copy()
+    return tsv_read
 
 ##-----------------------------CREATING THE THREE DICTIONARIES INDEPENDENTLY-------------------------------
 
-def creating_lines(text_file):
-    return {line: [stop for stop in text_file[line]] for line in text_file}
+def creating_lines(tsv_read):
+    return {line: [stop for stop in tsv_read[line]] for line in tsv_read}
 
-def creating_neighbours(text_file, tsv_read):
-    dict_of_lines = text_file
+def creating_neighbours(lines_dict, tsv_read):
     out_dict = {}
-    for line_stops in dict_of_lines.values():
+    for line_stops in lines_dict.values():
         for i in range(len(line_stops)-1):
             if line_stops[i] not in out_dict.keys():
                 out_dict[line_stops[i]] = {line_stops[i+1]: time_distance(tsv_read, line_stops[i], line_stops[i+1])}
@@ -160,32 +166,32 @@ def creating_neighbours(text_file, tsv_read):
                 out_dict[line_stops[i]][line_stops[i+1]] = time_distance(tsv_read, line_stops[i], line_stops[i+1])
     return out_dict
 
-def build_trams_stops(jsonobject):
-    with open(jsonobject, 'r') as infile:
+def build_trams_stops(tramstops):
+    with open(tramstops, 'r') as infile:
         all_stops = json.load(infile)
         return {stop: {"lat": float(all_stops[stop]["position"][0]), "lon": float(all_stops[stop]["position"][1])} for stop in all_stops}
 
 ##-----------------------------METHODS USED BY CREATING NEIGHBOURS-------------------------------
 
-def time_distance(file, stop1, stop2):
-    for line in file:
+def time_distance(times_dict, stop1, stop2):
+    for line in times_dict:
         try:
-            minutes1 = convert(file[line][stop1])
-            minutes2 = convert(file[line][stop2])
+            minutes1 = convert(times_dict[line][stop1])
+            minutes2 = convert(times_dict[line][stop2])
             return abs(minutes1 - minutes2)
         except KeyError:
             continue
 
 def convert(time):
-    split = time.split(":")
-    return int(split[1])
+    minutes = time.split(":")
+    return int(minutes[1])
 
 ##-----------------------------CREATION AND FUSION OF THREE DICTIONARIES-------------------------------
 
-def collect_all_data(json_stops, tsv_lines):
+def collect_all_data(jsonfile, tsv_file):
     tramnetwork = {}
-    tsv_read = reading_tsv_file(tsv_lines)
-    stops = build_trams_stops(json_stops)
+    tsv_read = reading_tsv_file(tsv_file)
+    stops = build_trams_stops(jsonfile)
     lines = creating_lines(tsv_read)
     times = creating_neighbours(lines, tsv_read)
     tramnetwork['stops'] = stops
@@ -193,15 +199,16 @@ def collect_all_data(json_stops, tsv_lines):
     tramnetwork['times'] = times
     return tramnetwork
 
-def create_json_file(data, filename = "tramnetwork.json"):
+def create_json_file(tramnetwork, filename ="tramnetwork.json"):
     with open(filename, 'w') as f:
-        json.dump(data, f, indent=2)
+        json.dump(tramnetwork, f, indent=2)
+        f.close()
 
 ##-----------------------------CREATING JSON FILE-------------------------------
 
 def build_tram_network():
-    data = collect_all_data(STOPS_JSON_FILE, TRAMLINES_TSV_FILE)
-    create_json_file(data)
+    tramnetwork = collect_all_data(STOPS_JSON_FILE, TRAMLINES_TSV_FILE)
+    create_json_file(tramnetwork)
 
 ##-----------------------------CONTROLLING THE PROGRAM FLOW-------------------------------
 
@@ -210,3 +217,5 @@ if __name__ == '__main__':
         build_tram_network()
     else:
         dialogue()
+
+
