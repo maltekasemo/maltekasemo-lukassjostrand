@@ -1,0 +1,53 @@
+class Graph:
+
+    def __init__(self, edgelist):
+        self._adjlist = None
+        self._valuelist = None
+
+    def __len__(self):
+        pass
+
+    def add_edges(self, a, b):
+        if a in self._adjlist:
+            self._adjlist[a].append(b)
+        else:
+            self._adjlist[a] = [b]
+
+    def add_vertex(self, a):
+        self._adjlist[a] = None
+        self._valuelist[a] = None
+
+    def get_number_of_edges(self):
+        return len(self._adjlist)
+
+    def get_vertex_value(self, v):
+        return self._valuelist[v]
+
+    def get_neighbours(self, v):
+        return [neighbour for neighbour in self._adjlist[v]]
+
+    def remove_edge(self, a, b):
+        if a in self._adjlist:
+            if b in self._adjlist[a]:
+                self._adjlist[a].remove(b)
+
+    def remove_vertex(self, v):
+        self._adjlist.pop(v)
+        self._valuelist.pop(v)
+
+    def set_vertex_value(self, v, x):
+        self._valuelist[v] = x
+
+    def get_vertices(self):
+        return [vertice for vertice in self._valuelist]
+
+class WeightedGraph:
+
+    def __init__(self, start):
+        self._weightlist = None #dict
+
+    def get_weight(self, a, b):
+        return self._weightlist[a][b]
+
+    def set_weight(self, a, b, w):
+        self._weightlist[a][b] = w
