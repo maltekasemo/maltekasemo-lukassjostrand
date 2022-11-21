@@ -1,0 +1,69 @@
+class TramStops:
+
+    def __init__(self, name, lines, lat, lon):
+        self._lines = lines
+        self._name = name
+        self._position = (lat, lon)
+
+    def add_line(self, line):
+        self._lines.append(line)
+
+    def get_lines(self):
+        return self._lines
+
+    def get_name(self):
+        return self._name
+
+    def get_position(self):
+        return self._position
+
+    def set_position(self, lat, lon):
+        self._position = (lat, lon)
+
+
+class TramLine():
+
+    def __init__(self, num, stops):
+        self._number = num
+        self._stops = stops
+        pass
+
+    def get_number(self):
+        return self._number
+
+    def get_stops(self):
+        return self._stops
+
+
+class TramNetwork():
+    def __init__(self, lines, stops, times):
+        self._linedict = lines
+        self._stopdict = stops
+        self._timedict = times
+
+    def all_lines(self):
+        pass
+
+    def all_stops(self):
+        pass
+
+    def extreme_position(self):
+        pass
+
+    def geo_distance(self, a, b):
+        pass
+
+    def line_stops(self, line):
+        pass
+
+    def remove_lines(self, lines):
+        pass
+
+    def stop_lines(self, a):
+        pass
+
+    def stop_position(self, a):
+        pass
+
+    def transition_time(self, a, b):
+        pass
