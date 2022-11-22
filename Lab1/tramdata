@@ -87,13 +87,11 @@ def lines_via_stop(lines_dict, stop):
         return "Unknown argument(s)"
 
 def lines_between_stops(lines_dict, positions_dict, stop1, stop2):
-    if stop1 not in positions_dict or stop2 not in positions_dict:
-        return "Unknown argument(s)"
     lines_between_stops = [line for line in lines_dict if stop1 in lines_dict[line] and stop2 in lines_dict[line]]
     if lines_between_stops:
         return lines_between_stops
     else:
-        return f" No lines passes {stop1} and {stop2}"
+        return "Unknown argument(s)"
 
 def times_between_stops(tramnetwork, line, stop1, stop2):
     try:
@@ -111,7 +109,7 @@ def times_between_stops(tramnetwork, line, stop1, stop2):
         return time
 
     except ValueError:
-        return "Stop(s) not in line"
+        return "Unknown argument(s)"
 
 def distance_between_stops(positions_dict, stop1, stop2):
     try:
