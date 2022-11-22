@@ -9,8 +9,8 @@ TRAMLINES_TSV_FILE = 'tramlines.tsv'
 def get_open_json_file():
     infile = 'tramnetwork.json'
     with open(infile, 'r') as data:
-        tramworks = json.load(data)
-    return tramworks
+        tramnetwork = json.load(data)
+    return tramnetwork
 
 ##-----------------------------MAIN FUNCTION-------------------------------
 
@@ -50,7 +50,7 @@ def answer_query(input_string, query):
     if query == 'lines passing stop':
         stop = input_string.split('via ')[1]
         if input_string.split('via ')[0]:
-            return 'I give up, you are just messing with me'
+            return 'Sorry, try again'
         stop.lstrip().rstrip()
         answer = lines_via_stop(tramnetwork['lines'], stop)
     elif query == 'lines between stops':
@@ -59,16 +59,19 @@ def answer_query(input_string, query):
         stop1 = stops[0].lstrip().rstrip()
         stop2 = stops[1].lstrip().rstrip()
         if stop1 == stop2:
-            return 'I give up, you are just messing with me'
+            return 'Sorry, try again'
         answer = lines_between_stops(tramnetwork['lines'], tramnetwork['stops'], stop1, stop2)
     elif query == 'time from a to b':
-        line_and_stops = input_string.lstrip('time with ')
-        line = line_and_stops.split('from')[0].lstrip().rstrip()
-        stops = line_and_stops.split('from')[1]
-        stop1 = stops.split(' to ')[0].lstrip().rstrip()
-        stop2 = stops.split(' to ')[1].lstrip().rstrip()
+        try:
+            line_and_stops = input_string.lstrip('time with ')
+            line = line_and_stops.split('from')[0].lstrip().rstrip()
+            stops = line_and_stops.split('from')[1]
+            stop1 = stops.split(' to ')[0].lstrip().rstrip()
+            stop2 = stops.split(' to ')[1].lstrip().rstrip()
+        except IndexError:
+            return "Sorry, try again"
         if stop1 == stop2:
-            return 'I give up, you are just messing with me'
+            return 'Sorry, try again'
         answer = times_between_stops(tramnetwork, line, stop1, stop2)
     elif query == 'distance from a to b':
         stop1_and_stop2 = input_string.lstrip('distance from')
@@ -76,6 +79,8 @@ def answer_query(input_string, query):
         stop1 = stops[0].rstrip().lstrip()
         stop2 = stops[1].rstrip().lstrip()
         answer = distance_between_stops(tramnetwork['stops'], stop1, stop2)
+        if isinstance(answer,float):
+            answer = f"The distance from {stop1} to {stop2} is {answer} km"
     return answer
 
 ##-----------------------------CALCULATING METHODS-------------------------------
@@ -109,7 +114,7 @@ def times_between_stops(tramnetwork, line, stop1, stop2):
 
         for i in range(len(stations_between_stops)-1):
             time += tramnetwork['times'][stations_between_stops[i]][stations_between_stops[i + 1]]
-        return f"{time} minutes"
+        return f"Time with {line} from {stop1} to {stop2} is {time} minutes"
 
     except ValueError:
         return "Stop(s) not in line"
@@ -223,7 +228,5 @@ if __name__ == '__main__':
         build_tram_network()
     else:
         dialogue()
-
-
 
 
