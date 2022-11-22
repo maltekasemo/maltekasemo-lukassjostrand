@@ -14,12 +14,13 @@ def get_open_json_file():
 
 ##-----------------------------MAIN FUNCTION-------------------------------
 
-def dialogue():
+def dialogue(input_string = None):
     running = True
     print("The following formats are functioning:\nvia <stop>\nbetween <stop1> and <stop2>"
             "\ntime with <line> from <stop1> to <stop2>\ndistance from <stop1> to <stop2>\nquit")
     while running:
-        input_string = input("> ")
+        if input_string is None:
+            input_string = input("> ")
         if input_string == 'quit':
             print("Bye bye!")
             running = False
@@ -58,8 +59,6 @@ def answer_query(input_string, query):
         stops = stop1_and_stop2.split(' and ')
         stop1 = stops[0].lstrip().rstrip()
         stop2 = stops[1].lstrip().rstrip()
-        if stop1 == stop2:
-            return 'Sorry, try again'
         answer = lines_between_stops(tramnetwork['lines'], tramnetwork['stops'], stop1, stop2)
     elif query == 'time from a to b':
         try:
@@ -70,8 +69,6 @@ def answer_query(input_string, query):
             stop2 = stops.split(' to ')[1].lstrip().rstrip()
         except IndexError:
             return "Sorry, try again"
-        if stop1 == stop2:
-            return 'Sorry, try again'
         answer = times_between_stops(tramnetwork, line, stop1, stop2)
     elif query == 'distance from a to b':
         stop1_and_stop2 = input_string.lstrip('distance from')
@@ -79,8 +76,6 @@ def answer_query(input_string, query):
         stop1 = stops[0].rstrip().lstrip()
         stop2 = stops[1].rstrip().lstrip()
         answer = distance_between_stops(tramnetwork['stops'], stop1, stop2)
-        if isinstance(answer,float):
-            answer = f"The distance from {stop1} to {stop2} is {answer} km"
     return answer
 
 ##-----------------------------CALCULATING METHODS-------------------------------
@@ -114,7 +109,7 @@ def times_between_stops(tramnetwork, line, stop1, stop2):
 
         for i in range(len(stations_between_stops)-1):
             time += tramnetwork['times'][stations_between_stops[i]][stations_between_stops[i + 1]]
-        return f"Time with {line} from {stop1} to {stop2} is {time} minutes"
+        return f"Time with {line} is {time} minutes"
 
     except ValueError:
         return "Stop(s) not in line"
@@ -228,5 +223,6 @@ if __name__ == '__main__':
         build_tram_network()
     else:
         dialogue()
+
 
 
