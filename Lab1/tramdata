@@ -14,13 +14,12 @@ def get_open_json_file():
 
 ##-----------------------------MAIN FUNCTION-------------------------------
 
-def dialogue(input_string = None):
+def dialogue():
     running = True
     print("The following formats are functioning:\nvia <stop>\nbetween <stop1> and <stop2>"
             "\ntime with <line> from <stop1> to <stop2>\ndistance from <stop1> to <stop2>\nquit")
     while running:
-        if input_string is None:
-            input_string = input("> ")
+        input_string = input("> ")
         if input_string == 'quit':
             print("Bye bye!")
             running = False
