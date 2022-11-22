@@ -3,9 +3,6 @@ from tramdata import *
 
 TRAM_FILE = 'tramnetwork.json'
 
-with open('tramlines.tsv', 'r') as data:
-    rows = csv.reader(data, delimiter="\t")
-
 class TestTramData(unittest.TestCase):
 
     def setUp(self):
@@ -21,19 +18,23 @@ class TestTramData(unittest.TestCase):
             self.assertIn(stop, self.stopdict, msg = stop + ' not in stopdict')
 
     def test_all_tram_lines_included(self):
-        for line in rows:
-            if line:
-                if line[0][0].isdigit():
-                    self.assertIn(line[0].split(':')[0], self.linedict, msg=line[0][0] + ' not in linedict')
+        with open('tramlines.tsv', 'r') as data:
+            rows = csv.reader(data, delimiter = "\t")
+            for line in rows:
+                if line:
+                    if line[0][0].isdigit():
+                        self.assertIn(line[0].split(':')[0], self.linedict, msg=line[0][0] + ' not in linedict')
 
     def test_all_stops_in_line(self):
-        for line in rows:
-            if line:
-                if line[0][0].isdigit():
-                    line_nr = line[0].split(':')[0]
-                else:
-                    stop = line[0].rsplit(" ", 1)[0].rstrip()
-                    self.assertIn(stop, self.linedict[line_nr], msg=stop + ' not in ' + line_nr)
+        with open('tramlines.tsv', 'r') as data:
+            rows = csv.reader(data, delimiter = "\t")
+            for line in rows:
+                if line:
+                    if line[0][0].isdigit():
+                        line_nr = line[0].split(':')[0]
+                    else:
+                        stop = line[0].rsplit(" ", 1)[0].rstrip()
+                        self.assertIn(stop, self.linedict[line_nr], msg=stop + ' not in ' + line_nr)
 
     def test_all_distances_less_than_20_km(self):
         for stop1 in self.stopdict:
@@ -61,4 +62,3 @@ class TestTramData(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
