@@ -1,11 +1,10 @@
 class Graph:
-
-    def __init__(self, edgelist):
+    def __init__(self, edgelist: list):
         self._adjlist = None
         self._valuelist = None
 
     def __len__(self):
-        pass
+        return len(self._valuelist)
 
     def add_edges(self, a, b):
         if a in self._adjlist:
@@ -14,11 +13,11 @@ class Graph:
             self._adjlist[a] = [b]
 
     def add_vertex(self, a):
-        self._adjlist[a] = None
-        self._valuelist[a] = None
+        self._adjlist[a] = []
+        self._valuelist[a] = []
 
-    def get_number_of_edges(self):
-        return len(self._adjlist)
+    def get_edges(self):
+        return self._adjlist
 
     def get_vertex_value(self, v):
         return self._valuelist[v]
@@ -30,6 +29,9 @@ class Graph:
         if a in self._adjlist:
             if b in self._adjlist[a]:
                 self._adjlist[a].remove(b)
+        if b in self._adjlist:
+            if a in self._adjlist[b]:
+                self._adjlist[b].remove(a)
 
     def remove_vertex(self, v):
         self._adjlist.pop(v)
@@ -42,7 +44,6 @@ class Graph:
         return [vertice for vertice in self._valuelist]
 
 class WeightedGraph:
-
     def __init__(self, start):
         self._weightlist = None #dict
 
@@ -51,3 +52,9 @@ class WeightedGraph:
 
     def set_weight(self, a, b, w):
         self._weightlist[a][b] = w
+
+def dijkstra(graph, source, cost=lambda u,v: 1):
+    pass
+
+def visualize(graph, view='dot', name='mygraph', nodecolors={}, engine='dot'):
+    pass
