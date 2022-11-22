@@ -53,10 +53,12 @@ class TestTramData(unittest.TestCase):
                 self.assertEqual(answer_query(f'via {stop1}', 'lines passing stop'), lines_via_stop(self.linedict, stop1), msg='Not same output')
                 self.assertEqual(answer_query(f'between {stop1} and {stop2}', 'lines between stops'), lines_between_stops(self.linedict, self.stopdict, stop1, stop2), msg='Not same output')
                 self.assertEqual(answer_query(f'distance from {stop1} to {stop2}', 'distance from a to b'), distance_between_stops(self.stopdict, stop1, stop2), msg='Not same output')
-                for line in self.linedict:
+
+        for line in self.linedict:
+            for stop1 in self.linedict[line]:
+                for stop2 in self.linedict[line]:
                     self.assertEqual(answer_query(f'with {line} from {stop1} to {stop2}', 'time from a to b'),
-                                     times_between_stops(self.all, line, stop1, stop2), msg='Not same output')
+                    times_between_stops(self.all, line, stop1, stop2), msg='Not same output')
 
 if __name__ == '__main__':
     unittest.main()
-
