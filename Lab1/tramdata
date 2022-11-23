@@ -58,7 +58,7 @@ def answer_query(input_string, query):
         stops = stop1_and_stop2.split(' and ')
         stop1 = stops[0].lstrip().rstrip()
         stop2 = stops[1].lstrip().rstrip()
-        answer = lines_between_stops(tramnetwork['lines'], tramnetwork['stops'], stop1, stop2)
+        answer = lines_between_stops(tramnetwork['lines'], stop1, stop2)
     elif query == 'time from a to b':
         try:
             line_and_stops = input_string.lstrip('time with ')
@@ -86,7 +86,7 @@ def lines_via_stop(lines_dict, stop):
     else:
         return "Unknown argument(s)"
 
-def lines_between_stops(lines_dict, positions_dict, stop1, stop2):
+def lines_between_stops(lines_dict, stop1, stop2):
     lines_between_stops = [line for line in lines_dict if stop1 in lines_dict[line] and stop2 in lines_dict[line]]
     if lines_between_stops:
         return lines_between_stops
@@ -204,7 +204,7 @@ def collect_all_data(jsonfile, tsv_file):
 
 def create_json_file(tramnetwork, filename ="tramnetwork.json"):
     with open(filename, 'w') as f:
-        json.dump(tramnetwork, f, indent=2)
+        json.dump(tramnetwork, f, indent=2, ensure_ascii=False)
         f.close()
 
 ##-----------------------------CREATING JSON FILE-------------------------------
