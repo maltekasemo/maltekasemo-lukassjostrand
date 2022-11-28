@@ -1,0 +1,74 @@
+import json
+TRAM_FILE = 'tramnetwork.json'
+
+print(TRAM_FILE)
+
+def get_open_json_file():
+    infile = 'tramnetwork.json'
+    with open(infile, 'r') as data:
+        tramnetwork = json.load(data)
+    return tramnetwork
+
+def dijkstra(graph, start, end, cost=lambda u,v: 1):
+    shortest_distance = {}
+    predecessor = {}
+    unseenNodes = graph
+    infinity = 999999
+    shortest_path = []
+    for node in unseenNodes:
+        shortest_distance[node] = infinity
+    shortest_distance[start] = 0
+    print(shortest_distance)
+
+    while unseenNodes:
+        minNode  = None
+        for node in unseenNodes:
+            if minNode is None:
+                minNode = node
+            elif shortest_distance[node] < shortest_distance[minNode]:
+                minNode = node
+
+
+        for childNode, weight in graph[minNode].items():
+
+            print(unseenNodes)
+            print(minNode)
+            #print(childNode)
+            #print(minNode)
+            #print(shortest_distance[minNode])
+            #print(shortest_distance)
+            #print(weight)
+            try:
+                if weight + shortest_distance[minNode] < shortest_distance[childNode]:
+                    shortest_distance[childNode] = weight + shortest_distance[minNode]
+                    predecessor[childNode] = minNode
+
+            except KeyError:
+                graph[childNode] = None
+                break
+
+            unseenNodes.pop(minNode)
+    #print(shortest_distance)
+
+    currentNode = goal
+    while currentNode != start:
+        try:
+            path.insert(0, currentNode)
+            currentNode = predecessor[currentNode]
+        except KeyError:
+            break
+
+    path.insert(0, start)
+    if shortest_distance[goal] != infinity:
+        print(shortest_distance(goal))
+        print(path)
+
+
+
+
+tramnetwork = get_open_json_file()
+time_dict = tramnetwork['times']
+stops = tramnetwork['stops']
+
+
+dijkstra(time_dict, 'Tingvallsvägen', "Härlanda")
