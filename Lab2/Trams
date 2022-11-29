@@ -1,83 +1,118 @@
 from Lab1.tramdata import *
-from Graph import *
-import sys
+from graphs import *
 import json
 TRAM_FILE = 'tramnetwork.json'
 
-class TramStops:
+with open(TRAM_FILE, 'r') as data:
+    fusk = json.load(data)
+
+class TramStops: #CHECK
     def __init__(self, name: str, lines: list, lat: float, lon: float):
         self._lines = lines
         self._name = name
-        self._position = (lat, lon)
+        self._position = (lon, lat)
 
-    def add_line(self, line):
+    def add_line(self, line): #CHECK
         self._lines.append(line)
 
-    def get_lines(self):
+    def get_lines(self): #CHECK
         return self._lines
 
-    def get_name(self):
+    def get_name(self): #CHECK
         return self._name
 
-    def get_position(self):
+    def get_position(self): #CHECK
         return self._position
 
-    def set_position(self, lat: float, lon: float):
+    def set_position(self, lat: float, lon: float): #CHECK
         self._position = (lat, lon)
 
-class TramLine:
+class TramLine: #CHECK
     def __init__(self, num: str, stops: list):
         self._number = num
         self._stops = stops
 
-    def get_number(self):
+    def get_number(self): #CHECK
         return self._number
 
-    def get_stops(self):
+    def get_stops(self): #CHECK
         return self._stops
 
-class TramNetwork:
-    def __init__(self, lines: dict, stops: dict, times: dict):
+class TramNetwork(Graph):
+    def __init__(self, lines: dict, stops: dict, times: dict, edgelist: list = None):
+        super().__init__(edgelist=edgelist)
         self._linedict = lines
         self._stopdict = stops
         self._timedict = times
 
-    def get_all_lines(self):
-        return [line for line in self._linedict]
+    def get_all_lines(self): #CHECK
+        return {line: self._linedict[line] for line in self._linedict}
 
-    def get_all_stops(self):
-        return [stop for stop in self._stopdict]
+    def get_all_stops(self): #CHECK
+        return [self._stopdict[stop] for stop in self._stopdict]
 
-    def get_extreme_position(self):
-        pass
+    def get_extreme_position(self): #CHECK
+        lat_list = [self._stopdict[stop]._position[0] for stop in self._stopdict]
+        lon_list = [self._stopdict[stop]._position[1] for stop in self._stopdict]
+        return (max(lat_list), max(lon_list), min(lat_list), min(lon_list))
 
-    def get_geo_distance(self, a, b):
-        return distance_between_stops(self._stopdict, a, b)
+    def get_geo_distance(self, a, b): #NJA-CHECK
+        return distance_between_stops(fusk['stops'], self._stopdict[a]._name, self._stopdict[b]._name)
 
-    def get_line_stops(self, line):
-        return [stop for stop in self._linedict[line]]
+    def get_line_stops(self, line): #CHECK
+        return [stop for stop in self._linedict[line].get_stops()]
 
-    def remove_lines(self, lines):
+    def remove_lines(self, lines): #CHECK
         for line in lines:
             self._linedict.pop(line)
 
-    def get_stop_lines(self, a):
-        return lines_via_stop(self._linedict, a)
+    def get_stop_lines(self, a): #CHECK
+        return self._stopdict[a].get_lines()
 
-    def get_stop_position(self, a):
-        return self._stopdict[a]._position
+    def get_stop_position(self, a): #CHECK
+        return self._stopdict[a].get_position()
 
-    def get_transition_time(self, a, b):
+    def get_transition_time(self, a, b): #CHECK
         try:
-            return self._timedict[a][b]
-        except ValueError:
-            return self._timedict[b][a]
-        else:
-            return 'Fail'
+            return self._timedict[a._name][b._name]
+        except KeyError:
+            try:
+                return self._timedict[b._name][a._name]
+            except KeyError:
+                return None
 
-def readTramnetwork(file = TRAM_FILE):
+def readTramnetwork(file = TRAM_FILE): #CHECK
     with open(file, 'r') as data:
         tramnetwork = json.load(data)
-    return TramNetwork(tramnetwork['lines'], tramnetwork['stops'], tramnetwork['times'])
+
+    dict_of_stops = {stop: TramStops(stop, lines_via_stop(tramnetwork['lines'], stop), tramnetwork['stops'][stop]['lat'],
+                         tramnetwork['stops'][stop]['lon']) for stop in tramnetwork['stops']}
+
+    dict_of_lines = {}
+    for line in tramnetwork['lines']:
+        dict_of_lines[line] = TramLine(line, [dict_of_stops[stop] for stop in tramnetwork['lines'][line]])
+
+    return TramNetwork(dict_of_lines, dict_of_stops, tramnetwork['times'])
+
+def create_graph_from_network():
+    network = readTramnetwork()
+    all_lines = network.get_all_lines()
+    all_edges = []
+    for line in all_lines:
+        line_edge_list = [(all_lines[line].get_stops()[i], all_lines[line].get_stops()[i + 1]) for i in
+                          range(len(all_lines[line].get_stops()) - 1)]
+        all_edges += line_edge_list
+
+    first_graph = TramNetwork(network._linedict, network._stopdict, network._timedict, all_edges)
+    return first_graph
+
+
+
+
+
+
+
+
+
 
 
