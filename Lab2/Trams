@@ -107,8 +107,19 @@ def create_graph_from_network():
     return first_graph
 
 
+if __name__ == '__main__':
+    info_graph = create_graph_from_network()
+    info_graph.add_nodes_and_edges()
+    all_stops = info_graph.get_all_stops()
+    for stop in all_stops:
+        if stop._name == 'Angered Centrum':
+            source = stop
+        elif stop._name == 'Saltholmen':
+            target = stop
 
-
+    best_way = info_graph.dijkstra(target, source)
+    info_graph.colour_path(best_way['path'])
+    info_graph.render()
 
 
 
