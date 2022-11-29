@@ -1,126 +1,151 @@
-from Lab1.tramdata import *
-from graphs import *
-import json
-TRAM_FILE = 'tramnetwork.json'
+import graphviz
+from heapq import *
 
-with open(TRAM_FILE, 'r') as data:
-    fusk = json.load(data)
+class WeightedGraph:
+    def __init__(self, start):
+        self._weightlist = None #dict
 
-class TramStops: #CHECK
-    def __init__(self, name: str, lines: list, lat: float, lon: float):
-        self._lines = lines
-        self._name = name
-        self._position = (lon, lat)
+    def get_weight(self, a, b):
+        return self._weightlist[a][b]
 
-    def add_line(self, line): #CHECK
-        self._lines.append(line)
+    def set_weight(self, a, b, w):
+        self._weightlist[a][b] = w
 
-    def get_lines(self): #CHECK
-        return self._lines
+class Graph(graphviz.Graph):
+    def __init__(self, edgelist: list = None): # edge_list = [(x,y), (z,a)]
+        super().__init__()
+        self.engine = 'neato'
+        self._adjlist = {}
+        self._valuelist = {}
+        if edgelist:
+            self.init_using_edgelist(edgelist)
 
-    def get_name(self): #CHECK
-        return self._name
+    def init_using_edgelist(self, edgelist):
+        for tuple in edgelist:
+            self.add_edge(tuple[0], tuple[1])
+            self.add_vertex(tuple[0])
+            self.add_vertex(tuple[1])
 
-    def get_position(self): #CHECK
-        return self._position
+    def __len__(self):
+        return len(self._valuelist)
 
-    def set_position(self, lat: float, lon: float): #CHECK
-        self._position = (lat, lon)
+    def add_edge(self, a, b):
+        if a in self._adjlist:
+            if b not in self._adjlist[a]:
+                self._adjlist[a].append(b)
+        else:
+            self._adjlist[a] = [b]
+        if b in self._adjlist:
+            if a not in self._adjlist[b]:
+                self._adjlist[b].append(a)
+        else:
+            self._adjlist[b] = [a]
 
-class TramLine: #CHECK
-    def __init__(self, num: str, stops: list):
-        self._number = num
-        self._stops = stops
+    def add_vertex(self, a):
+        if a not in self._valuelist:
+            self._valuelist[a] = None
+        if a not in self._adjlist:
+            self._adjlist[a] = []
 
-    def get_number(self): #CHECK
-        return self._number
+    def get_edges(self):
+        edges = []
+        for vertex, neighbours in self._adjlist.items():
+            for neighbour in neighbours:
+                if (vertex, neighbour) not in edges and (neighbour, vertex) not in edges:
+                    edges.append((vertex, neighbour))
+        return edges
 
-    def get_stops(self): #CHECK
-        return self._stops
+    def get_vertex_value(self, v):
+        return self._valuelist[v]
 
-class TramNetwork(Graph):
-    def __init__(self, lines: dict, stops: dict, times: dict, edgelist: list = None):
-        super().__init__(edgelist=edgelist)
-        self._linedict = lines
-        self._stopdict = stops
-        self._timedict = times
+    def get_neighbours(self, v):
+        return [neighbour for neighbour in self._adjlist[v]]
 
-    def get_all_lines(self): #CHECK
-        return {line: self._linedict[line] for line in self._linedict}
+    def remove_edge(self, a, b):
+        if a in self._adjlist:
+            if b in self._adjlist[a]:
+                self._adjlist[a].remove(b)
+        if b in self._adjlist:
+            if a in self._adjlist[b]:
+                self._adjlist[b].remove(a)
 
-    def get_all_stops(self): #CHECK
-        return [self._stopdict[stop] for stop in self._stopdict]
+    def remove_vertex(self, v):
+        self._adjlist.pop(v)
+        for item in self._adjlist:
+            if v in self._adjlist[item]:
+                self._adjlist[item].pop(v)
+        self._valuelist.pop(v)
 
-    def get_extreme_position(self): #CHECK
-        lat_list = [self._stopdict[stop]._position[0] for stop in self._stopdict]
-        lon_list = [self._stopdict[stop]._position[1] for stop in self._stopdict]
-        return (max(lat_list), max(lon_list), min(lat_list), min(lon_list))
+    def set_vertex_value(self, v, x):
+        self._valuelist[v] = x
 
-    def get_geo_distance(self, a, b): #NJA-CHECK
-        return distance_between_stops(fusk['stops'], self._stopdict[a]._name, self._stopdict[b]._name)
+    def get_vertices(self):
+        return [vertice for vertice in self._valuelist]
 
-    def get_line_stops(self, line): #CHECK
-        return [stop for stop in self._linedict[line].get_stops()]
+    def add_nodes_and_edges(self):
+        edge_list = self.get_edges()
+        vertices = self.get_vertices()
 
-    def remove_lines(self, lines): #CHECK
-        for line in lines:
-            self._linedict.pop(line)
+        for i in range(len(vertices)):
+            self.node(f"{vertices[i]._name}", f'{vertices[i]._name}',
+                       pos=f'{vertices[i]._position[1] * 200},{vertices[i]._position[0] * 200}!',
+                       shape='rectangle', width='0.2', labelfontsize='7', fontsize='10')
 
-    def get_stop_lines(self, a): #CHECK
-        return self._stopdict[a].get_lines()
+        for edge in edge_list:
+            self.edge(edge[0]._name, edge[1]._name, constraint='false')
 
-    def get_stop_position(self, a): #CHECK
-        return self._stopdict[a].get_position()
+    def colour_path(self, path_list: list):
+        new_list = [self.get_vertices()[a] for a in range(len(self.get_vertices()))]
+        for i in range(len(path_list)):
+            the_index = new_list.index(path_list[i])
+            self.node(path_list[i]._name, path_list[i]._name,
+                          pos=f'{self.get_vertices()[the_index]._position[1] * 200},{self.get_vertices()[the_index]._position[0] * 200}!',
+                          shape='circle', width='0.2', labelfontsize='7', fontsize='10', fillcolor='red',
+                          style='filled')
 
-    def get_transition_time(self, a, b): #CHECK
-        try:
-            return self._timedict[a._name][b._name]
-        except KeyError:
-            try:
-                return self._timedict[b._name][a._name]
-            except KeyError:
-                return None
+        for i in range(len(path_list) - 1):
+            self.edge(path_list[i]._name, path_list[i + 1]._name, constraint='false', color='red')
 
-def readTramnetwork(file = TRAM_FILE): #CHECK
-    with open(file, 'r') as data:
-        tramnetwork = json.load(data)
+    def render_map(self):
+        self.render(directory='stations', view=True)
 
-    dict_of_stops = {stop: TramStops(stop, lines_via_stop(tramnetwork['lines'], stop), tramnetwork['stops'][stop]['lat'],
-                         tramnetwork['stops'][stop]['lon']) for stop in tramnetwork['stops']}
+    def dijkstra(self, source, target, cost = lambda u, v: 1):
+        path_lengths = {v: 9999 for v in self.get_vertices()}
+        prev = {previous: None for previous in self.get_vertices()}
+        path_lengths[source] = 0
+        unseen_vertices = [v for v in self.get_vertices()]
 
-    dict_of_lines = {}
-    for line in tramnetwork['lines']:
-        dict_of_lines[line] = TramLine(line, [dict_of_stops[stop] for stop in tramnetwork['lines'][line]])
+        while unseen_vertices:
+            upper_bounds = {v: path_lengths[v] for v in unseen_vertices}
+            u = min(upper_bounds, key = upper_bounds.get)
+            unseen_vertices.remove(u)
 
-    return TramNetwork(dict_of_lines, dict_of_stops, tramnetwork['times'])
+            for v in self.get_neighbours(u):
+                alt = path_lengths[u] + self.get_transition_time(u, v)
+                if alt < path_lengths[v]:
+                    path_lengths[v] = alt
+                    prev[v] = u
 
-def create_graph_from_network():
-    network = readTramnetwork()
-    all_lines = network.get_all_lines()
-    all_edges = []
-    for line in all_lines:
-        line_edge_list = [(all_lines[line].get_stops()[i], all_lines[line].get_stops()[i + 1]) for i in
-                          range(len(all_lines[line].get_stops()) - 1)]
-        all_edges += line_edge_list
+        keys = list(prev.keys())
+        paths = {}
 
-    first_graph = TramNetwork(network._linedict, network._stopdict, network._timedict, all_edges)
-    return first_graph
+        for i in prev.keys():
+            path = [i]
+            for key in keys:
+                while key != i and path[-1] is not None:
+                    path.append(prev[path[-1]])
+            path.pop()
+            paths[i] = path
+
+        paths_with_time = {stop: {'path': paths[stop], 'dist': None} for stop in paths}
+        for stop in path_lengths:
+            paths_with_time[stop]['dist'] = path_lengths[stop]
+
+        return paths_with_time[target]
 
 
 
-if __name__ == '__main__':
-    info_graph = create_graph_from_network()
-    info_graph.add_nodes_and_edges()
-    all_stops = info_graph.get_all_stops()
-    for stop in all_stops:
-        if stop._name == 'Nya Varvsallén':
-            source = stop
-        elif stop._name == 'Centralstationen':
-            target = stop
 
-    best_way = info_graph.dijkstra(target, source)
-    info_graph.colour_path(best_way['path'])
-    info_graph.render()
 
 
 
