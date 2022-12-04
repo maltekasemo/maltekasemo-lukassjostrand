@@ -68,7 +68,7 @@ def answer_query(input_string, query):
             stop2 = stops.split(' to ')[1].lstrip().rstrip()
         except IndexError:
             return "Sorry, try again"
-        answer = times_between_stops(tramnetwork, line, stop1, stop2)
+        answer = time_between_stops(tramnetwork, line, stop1, stop2)
     elif query == 'distance from a to b':
         stop1_and_stop2 = input_string.lstrip('distance from')
         stops = stop1_and_stop2.split(' to ')
