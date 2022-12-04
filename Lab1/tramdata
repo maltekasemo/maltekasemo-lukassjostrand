@@ -93,7 +93,7 @@ def lines_between_stops(lines_dict, stop1, stop2):
     else:
         return "Unknown argument(s)"
 
-def times_between_stops(tramnetwork, line, stop1, stop2):
+def time_between_stops(tramnetwork, line, stop1, stop2):
     try:
         start_index = tramnetwork['lines'][line].index(stop1)
         end_index = tramnetwork['lines'][line].index(stop2)
