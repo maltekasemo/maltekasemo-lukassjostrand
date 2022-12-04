@@ -1,17 +1,19 @@
 import graphviz
-from heapq import *
 
 class WeightedGraph:
-    def __init__(self, start):
-        self._weightlist = None #dict
+    def __init__(self, start=None):
+        self._weightlist = {}
 
     def get_weight(self, a, b):
-        return self._weightlist[a][b]
+        try:
+            return self._weightlist[(a, b)]
+        except KeyError:
+            return self._weightlist[(b, a)]
 
     def set_weight(self, a, b, w):
-        self._weightlist[a][b] = w
+        self._weightlist[(a, b)] = w
 
-class Graph(graphviz.Graph):
+class Graph(graphviz.Graph, WeightedGraph):
     def __init__(self, edgelist: list = None): # edge_list = [(x,y), (z,a)]
         super().__init__()
         self.engine = 'neato'
@@ -47,7 +49,7 @@ class Graph(graphviz.Graph):
         if a not in self._adjlist:
             self._adjlist[a] = []
 
-    def get_edges(self):
+    def edges(self):
         edges = []
         for vertex, neighbours in self._adjlist.items():
             for neighbour in neighbours:
@@ -58,7 +60,7 @@ class Graph(graphviz.Graph):
     def get_vertex_value(self, v):
         return self._valuelist[v]
 
-    def get_neighbours(self, v):
+    def neighbours(self, v):
         return [neighbour for neighbour in self._adjlist[v]]
 
     def remove_edge(self, a, b):
@@ -73,77 +75,76 @@ class Graph(graphviz.Graph):
         self._adjlist.pop(v)
         for item in self._adjlist:
             if v in self._adjlist[item]:
-                self._adjlist[item].pop(v)
+                self._adjlist[item].remove(v)
         self._valuelist.pop(v)
 
     def set_vertex_value(self, v, x):
         self._valuelist[v] = x
 
-    def get_vertices(self):
+    def vertices(self):
         return [vertice for vertice in self._valuelist]
 
-    def add_nodes_and_edges(self):
-        edge_list = self.get_edges()
-        vertices = self.get_vertices()
-
-        for i in range(len(vertices)):
-            self.node(f"{vertices[i]._name}", f'{vertices[i]._name}',
-                       pos=f'{vertices[i]._position[1] * 200},{vertices[i]._position[0] * 200}!',
-                       shape='rectangle', width='0.2', labelfontsize='7', fontsize='10')
-
-        for edge in edge_list:
-            self.edge(edge[0]._name, edge[1]._name, constraint='false')
-
     def colour_path(self, path_list: list):
-        new_list = [self.get_vertices()[a] for a in range(len(self.get_vertices()))]
+        new_list = [self.vertices()[a] for a in range(len(self.vertices()))]
         for i in range(len(path_list)):
             the_index = new_list.index(path_list[i])
             self.node(path_list[i]._name, path_list[i]._name,
-                          pos=f'{self.get_vertices()[the_index]._position[1] * 200},{self.get_vertices()[the_index]._position[0] * 200}!',
-                          shape='circle', width='0.2', labelfontsize='7', fontsize='10', fillcolor='red',
-                          style='filled')
+                      pos=f'{self.vertices()[the_index]._position[1] * 200},{self.vertices()[the_index]._position[0] * 200}!',
+                      shape='rectangle', width='0.2', labelfontsize='7', fontsize='10', fillcolor='red',
+                      style='filled')
 
         for i in range(len(path_list) - 1):
             self.edge(path_list[i]._name, path_list[i + 1]._name, constraint='false', color='red')
 
     def render_map(self):
+        edge_list = self.edges()
+        vertices = self.vertices()
+
+        for i in range(len(vertices)):
+            self.node(f"{vertices[i]._name}", f'{vertices[i]._name}',
+                      pos=f'{vertices[i]._position[1] * 200},{vertices[i]._position[0] * 200}!',
+                      shape='rectangle', width='0.2', labelfontsize='7', fontsize='10')
+
+        for edge in edge_list:
+            self.edge(edge[0]._name, edge[1]._name, constraint='false')
+
         self.render(directory='stations', view=True)
 
-    def dijkstra(self, source, target, cost = lambda u, v: 1):
-        path_lengths = {v: 9999 for v in self.get_vertices()}
-        prev = {previous: None for previous in self.get_vertices()}
-        path_lengths[source] = 0
-        unseen_vertices = [v for v in self.get_vertices()]
+def dijkstra(graph, source, target, cost = lambda u, v: 1):
+    path_to_stop = {v: 9999 for v in graph.vertices()}
+    previous_stops = {previous: None for previous in graph.vertices()}
+    path_to_stop[source] = 0
+    unseen_vertices = [v for v in graph.vertices()]
 
-        while unseen_vertices:
-            upper_bounds = {v: path_lengths[v] for v in unseen_vertices}
-            u = min(upper_bounds, key = upper_bounds.get)
-            unseen_vertices.remove(u)
+    while unseen_vertices:
+        max_time = {v: path_to_stop[v] for v in unseen_vertices}
+        u = min(max_time, key = max_time.get)
+        unseen_vertices.remove(u)
 
-            for v in self.get_neighbours(u):
-                alt = path_lengths[u] + self.get_transition_time(u, v)
-                if alt < path_lengths[v]:
-                    path_lengths[v] = alt
-                    prev[v] = u
+        for neighbour in graph.neighbours(u):
+            alt_path = path_to_stop[u] + cost(u, neighbour)
+            if alt_path < path_to_stop[neighbour]:
+                path_to_stop[neighbour] = alt_path
+                previous_stops[neighbour] = u
 
-        keys = list(prev.keys())
-        paths = {}
+    keys = list(previous_stops.keys())
+    paths = {}
 
-        for i in prev.keys():
-            path = [i]
-            for key in keys:
-                while key != i and path[-1] is not None:
-                    path.append(prev[path[-1]])
-            path.pop()
-            paths[i] = path
+    for i in previous_stops.keys():
+        path = [i]
+        for key in keys:
+            while key != i and path[-1] is not None:
+                path.append(previous_stops[path[-1]])
+        path.pop()
+        paths[i] = path
 
-        paths_with_time = {stop: {'path': paths[stop], 'dist': None} for stop in paths}
-        for stop in path_lengths:
-            paths_with_time[stop]['dist'] = path_lengths[stop]
+    paths_with_time = {stop: {'path': paths[stop], 'dist': None} for stop in paths}
+    for stop in path_to_stop:
+        paths_with_time[stop]['dist'] = path_to_stop[stop]
 
-        return paths_with_time[target]
+    return paths_with_time[target]
 
-
+    
 
 
 
