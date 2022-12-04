@@ -40,39 +40,51 @@ class TramLine: #CHECK
 
 class TramNetwork(Graph):
     def __init__(self, lines: dict, stops: dict, times: dict, edgelist: list = None):
-        super().__init__(edgelist=edgelist)
         self._linedict = lines
         self._stopdict = stops
         self._timedict = times
+        if edgelist is None:
+            all_edges = []
+            all_lines = self.all_lines()
+            for line in all_lines:
+                line_edge_list = [(all_lines[line].get_stops()[i], all_lines[line].get_stops()[i + 1]) for i in
+                                  range(len(all_lines[line].get_stops()) - 1)]
+                all_edges += line_edge_list
+            super().__init__(edgelist= all_edges)
+            self._weightlist = {edge: self.transition_time(edge[0], edge[1]) for edge in self.edges()}
+        else:
+            super().__init__(edgelist=edgelist)
+            self._weightlist = {edge: self.transition_time(edge[0], edge[1]) for edge in self.edges()}
 
-    def get_all_lines(self): #CHECK
+
+    def all_lines(self): #CHECK
         return {line: self._linedict[line] for line in self._linedict}
 
-    def get_all_stops(self): #CHECK
+    def all_stops(self): #CHECK
         return [self._stopdict[stop] for stop in self._stopdict]
 
-    def get_extreme_position(self): #CHECK
+    def extreme_position(self): #CHECK
         lat_list = [self._stopdict[stop]._position[0] for stop in self._stopdict]
         lon_list = [self._stopdict[stop]._position[1] for stop in self._stopdict]
         return (max(lat_list), max(lon_list), min(lat_list), min(lon_list))
 
-    def get_geo_distance(self, a, b): #NJA-CHECK
-        return distance_between_stops(fusk['stops'], self._stopdict[a]._name, self._stopdict[b]._name)
+    def geo_distance(self, a, b): #NJA-CHECK
+        return distance_between_stops(fusk['stops'], self._stopdict[a], self._stopdict[b])
 
-    def get_line_stops(self, line): #CHECK
+    def line_stops(self, line): #CHECK
         return [stop for stop in self._linedict[line].get_stops()]
 
     def remove_lines(self, lines): #CHECK
         for line in lines:
             self._linedict.pop(line)
 
-    def get_stop_lines(self, a): #CHECK
+    def stop_lines(self, a): #CHECK
         return self._stopdict[a].get_lines()
 
-    def get_stop_position(self, a): #CHECK
+    def stop_position(self, a): #CHECK
         return self._stopdict[a].get_position()
 
-    def get_transition_time(self, a, b): #CHECK
+    def transition_time(self, a, b): #CHECK
         try:
             return self._timedict[a._name][b._name]
         except KeyError:
@@ -94,30 +106,31 @@ def readTramnetwork(file = TRAM_FILE): #CHECK
 
     return TramNetwork(dict_of_lines, dict_of_stops, tramnetwork['times'])
 
-def create_graph_from_network():
-    network = readTramnetwork()
-    all_lines = network.get_all_lines()
-    all_edges = []
-    for line in all_lines:
-        line_edge_list = [(all_lines[line].get_stops()[i], all_lines[line].get_stops()[i + 1]) for i in
-                          range(len(all_lines[line].get_stops()) - 1)]
-        all_edges += line_edge_list
+def demo():
+    G = readTramnetwork(TRAM_FILE)
 
-    first_graph = TramNetwork(network._linedict, network._stopdict, network._timedict, all_edges)
-    return first_graph
+    input_string = input('Please use format <source>,<target> <> ')
+    source = input_string.split(',')[0]
+    target = input_string.split(',')[1]
 
-
+    all_stops = G.all_stops()
+    for stop in all_stops:
+        if stop._name == source:
+            source = stop
+        elif stop._name == target:
+            target = stop
+    best_way = dijkstra(G, target, source, G.get_weight)
+    G.colour_path(best_way['path'])
+    G.render_map()
 
 if __name__ == '__main__':
-    info_graph = create_graph_from_network()
-    info_graph.add_nodes_and_edges()
-    all_stops = info_graph.get_all_stops()
-    for stop in all_stops:
-        if stop._name == 'Angered Centrum':
-            source = stop
-        elif stop._name == 'Saltholmen':
-            target = stop
+    demo()
 
-    best_way = info_graph.dijkstra(target, source)
-    info_graph.colour_path(best_way['path'])
-    info_graph.render()
+
+
+
+
+
+
+
+
