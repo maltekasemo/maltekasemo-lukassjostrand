@@ -38,7 +38,7 @@ class TramLine: #CHECK
     def get_stops(self): #CHECK
         return self._stops
 
-class TramNetwork(Graph):
+class TramNetwork(WeightedGraph):
     def __init__(self, lines: dict, stops: dict, times: dict, edgelist: list = None):
         self._linedict = lines
         self._stopdict = stops
@@ -106,19 +106,28 @@ def readTramnetwork(file = TRAM_FILE): #CHECK
 
     return TramNetwork(dict_of_lines, dict_of_stops, tramnetwork['times'])
 
-def demo():
-    G = readTramnetwork(TRAM_FILE)
-
-    source, target = input('Please use format <source>,<target> <> ').split(',')
-
+def getting_objects_by_names(G, src, trg):
     all_stops = G.all_stops()
     for stop in all_stops:
-        if stop._name == source:
+        if stop._name == src:
             source = stop
-        elif stop._name == target:
+        elif stop._name == trg:
             target = stop
-    view_shortest(G, source, target)
-    G.render_map()
+    return source, target
+
+def demo():
+    G = readTramnetwork(TRAM_FILE)
+    try:
+        src, trg = input('Please use format <source>,<target> <> ').split(',')
+    except ValueError:
+        print('Try again')
+        exit()
+
+    try:
+        source, target = getting_objects_by_names(G, src, trg)
+        view_shortest(G, source, target)
+    except UnboundLocalError:
+        print('Unknown argument(s)')
 
 if __name__ == '__main__':
     demo()
