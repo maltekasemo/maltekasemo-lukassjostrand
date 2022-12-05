@@ -1,5 +1,6 @@
 import graphviz
 
+
 class WeightedGraph:
     def __init__(self, start=None):
         self._weightlist = {}
@@ -12,6 +13,7 @@ class WeightedGraph:
 
     def set_weight(self, a, b, w):
         self._weightlist[(a, b)] = w
+
 
 class Graph(graphviz.Graph, WeightedGraph):
     def __init__(self, edgelist: list = None):
@@ -110,7 +112,12 @@ class Graph(graphviz.Graph, WeightedGraph):
 
         self.render(directory='stations', view=True)
 
-def dijkstra(graph, source, target, cost = lambda u, v: 1):
+def view_shortest(graph, source, target):
+    quickest_path = dijkstra(graph, source, graph.get_weight)
+    graph.colour_path(quickest_path[target]['path'])
+
+
+def dijkstra(graph, source, cost=lambda u, v: 1):
     path_to_stop = {v: 9999 for v in graph.vertices()}
     previous_stops = {previous: None for previous in graph.vertices()}
     path_to_stop[source] = 0
@@ -118,7 +125,7 @@ def dijkstra(graph, source, target, cost = lambda u, v: 1):
 
     while unseen_vertices:
         max_time = {v: path_to_stop[v] for v in unseen_vertices}
-        u = min(max_time, key = max_time.get)
+        u = min(max_time, key=max_time.get)
         unseen_vertices.remove(u)
 
         for neighbour in graph.neighbours(u):
@@ -142,9 +149,9 @@ def dijkstra(graph, source, target, cost = lambda u, v: 1):
     for stop in path_to_stop:
         paths_with_time[stop]['dist'] = path_to_stop[stop]
 
-    return paths_with_time[target]
+    return paths_with_time
 
-    
+
 
 
 
