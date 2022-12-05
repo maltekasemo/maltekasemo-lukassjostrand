@@ -45,7 +45,7 @@ class TestTramData(unittest.TestCase):
         for line in self.linedict:
             for i in range(len(self.linedict[line]) - 1):
                 for y in range(i, len(self.linedict[line])):
-                    self.assertEqual(times_between_stops(self.all, line, self.linedict[line][i], self.linedict[line][y]), times_between_stops(self.all, line, self.linedict[line][y], self.linedict[line][i]), msg = 'Reversed time not the same')
+                    self.assertEqual(time_between_stops(self.all, line, self.linedict[line][i], self.linedict[line][y]), time_between_stops(self.all, line, self.linedict[line][y], self.linedict[line][i]), msg = 'Reversed time not the same')
 
     def test_dialogue(self):
         for stop1 in self.stopdict:
