@@ -4,7 +4,7 @@ import json
 import csv
 
 STOPS_JSON_FILE = 'tramstops.json'
-TRAMLINES_TSV_FILE = 'tramlines.tsv'
+TRAMLINES_TXT_FILE = 'tramlines.txt'
 
 def get_open_json_file():
     infile = 'tramnetwork.json'
@@ -133,14 +133,14 @@ def distance_between_stops(positions_dict, stop1, stop2):
 
 ##-----------------------------READING TEXT-FILE AND ADAPTING TO USAGE-------------------------------
 
-def reading_tsv_file(text_file):
-    tsv_read = {}
+def reading_txt_file(text_file):
+    txt_read = {}
     stops_and_times_in_line = {}
     with open(text_file) as file:
         rows = csv.reader(file, delimiter="\t")
         for line in rows:
             if not line:
-                tsv_read[temp_var] = stops_and_times_in_line.copy()
+                txt_read[temp_var] = stops_and_times_in_line.copy()
                 stops_and_times_in_line = {}
             elif len(line[0]) <= 3 and len(line[0]) > 0:
                 temp_var = line[0].rstrip(":")
@@ -151,22 +151,22 @@ def reading_tsv_file(text_file):
                     stops_and_times_in_line[name] = the_split[1]
                 except IndexError:
                     pass
-        tsv_read[temp_var] = stops_and_times_in_line.copy()
-    return tsv_read
+        txt_read[temp_var] = stops_and_times_in_line.copy()
+    return txt_read
 
 ##-----------------------------CREATING THE THREE DICTIONARIES INDEPENDENTLY-------------------------------
 
-def creating_lines(tsv_read):
-    return {line: [stop for stop in tsv_read[line]] for line in tsv_read}
+def creating_lines(txt_read):
+    return {line: [stop for stop in txt_read[line]] for line in txt_read}
 
-def creating_neighbours(lines_dict, tsv_read):
+def creating_neighbours(lines_dict, txt_file):
     out_dict = {}
     for line_stops in lines_dict.values():
         for i in range(len(line_stops)-1):
             if line_stops[i] not in out_dict.keys():
-                out_dict[line_stops[i]] = {line_stops[i+1]: time_distance(tsv_read, line_stops[i], line_stops[i+1])}
+                out_dict[line_stops[i]] = {line_stops[i+1]: time_distance(txt_file, line_stops[i], line_stops[i + 1])}
             else:
-                out_dict[line_stops[i]][line_stops[i+1]] = time_distance(tsv_read, line_stops[i], line_stops[i+1])
+                out_dict[line_stops[i]][line_stops[i+1]] = time_distance(txt_file, line_stops[i], line_stops[i + 1])
     return out_dict
 
 def build_trams_stops(tramstops):
@@ -191,9 +191,9 @@ def convert(time):
 
 ##-----------------------------CREATION AND FUSION OF THREE DICTIONARIES-------------------------------
 
-def collect_all_data(jsonfile, tsv_file):
+def collect_all_data(jsonfile, txt_file):
     tramnetwork = {}
-    tsv_read = reading_tsv_file(tsv_file)
+    tsv_read = reading_txt_file(txt_file)
     stops = build_trams_stops(jsonfile)
     lines = creating_lines(tsv_read)
     times = creating_neighbours(lines, tsv_read)
@@ -210,7 +210,7 @@ def create_json_file(tramnetwork, filename ="tramnetwork.json"):
 ##-----------------------------CREATING JSON FILE-------------------------------
 
 def build_tram_network():
-    tramnetwork = collect_all_data(STOPS_JSON_FILE, TRAMLINES_TSV_FILE)
+    tramnetwork = collect_all_data(STOPS_JSON_FILE, TRAMLINES_TXT_FILE)
     create_json_file(tramnetwork)
 
 ##-----------------------------CONTROLLING THE PROGRAM FLOW-------------------------------
