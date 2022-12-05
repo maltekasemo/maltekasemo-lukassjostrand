@@ -1,4 +1,4 @@
-from Lab1.tramdata import *
+from tramdata import *
 from graphs import *
 import json
 TRAM_FILE = 'tramnetwork.json'
