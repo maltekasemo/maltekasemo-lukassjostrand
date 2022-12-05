@@ -69,7 +69,7 @@ class TramNetwork(Graph):
         return (max(lat_list), max(lon_list), min(lat_list), min(lon_list))
 
     def geo_distance(self, a, b): #NJA-CHECK
-        return distance_between_stops(fusk['stops'], self._stopdict[a], self._stopdict[b])
+        return distance_between_stops(cheat['stops'], self._stopdict[a], self._stopdict[b])
 
     def line_stops(self, line): #CHECK
         return [stop for stop in self._linedict[line].get_stops()]
@@ -86,10 +86,10 @@ class TramNetwork(Graph):
 
     def transition_time(self, a, b): #CHECK
         try:
-            return self._timedict[a._name][b._name]
+            return self._timedict[a.get_name()][b.get_name()]
         except KeyError:
             try:
-                return self._timedict[b._name][a._name]
+                return self._timedict[b.get_name()][a.get_name()]
             except KeyError:
                 return None
 
@@ -109,9 +109,7 @@ def readTramnetwork(file = TRAM_FILE): #CHECK
 def demo():
     G = readTramnetwork(TRAM_FILE)
 
-    input_string = input('Please use format <source>,<target> <> ')
-    source = input_string.split(',')[0]
-    target = input_string.split(',')[1]
+    source, target = input('Please use format <source>,<target> <> ').split(',')
 
     all_stops = G.all_stops()
     for stop in all_stops:
@@ -119,12 +117,12 @@ def demo():
             source = stop
         elif stop._name == target:
             target = stop
-    best_way = dijkstra(G, target, source, G.get_weight)
-    G.colour_path(best_way['path'])
+    view_shortest(G, source, target)
     G.render_map()
 
 if __name__ == '__main__':
     demo()
+
 
 
 
