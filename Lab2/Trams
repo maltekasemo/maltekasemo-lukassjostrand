@@ -4,7 +4,7 @@ import json
 TRAM_FILE = 'tramnetwork.json'
 
 with open(TRAM_FILE, 'r') as data:
-    fusk = json.load(data)
+    cheat = json.load(data)
 
 class TramStops: #CHECK
     def __init__(self, name: str, lines: list, lat: float, lon: float):
