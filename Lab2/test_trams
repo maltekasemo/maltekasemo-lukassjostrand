@@ -1,6 +1,5 @@
 import unittest
 from trams import *
-import networkx as nx
 
 class TestTramData(unittest.TestCase):
 
@@ -13,9 +12,9 @@ class TestTramData(unittest.TestCase):
                 self.assertEqual(self.network.transition_time(stop1, stop2), self.network.transition_time(stop2, stop1),
                                  msg = 'Transition time not the same')
 
-
-
-
+    def test_connectedness(self):
+        for stop in self.network.all_stops():
+            self.assertIsNotNone(self.network.neighbours(stop), msg = f'{stop} has no neighbours')
 
 
 if __name__ == '__main__':
