@@ -7,6 +7,16 @@ class TestTramData(unittest.TestCase):
     def setUp(self):
         self.network = readTramnetwork(TRAM_FILE)
 
+    def test_all_edge_nodes_in_vertices(self):
+        for edge in self.network.edges():
+            self.assertIn(edge[0] and edge[1], self.network.vertices(), msg= f"{edge[0]} or {edge[1]} not in vertice list")
+
+    def test_if_a_neighbouring_b_b_neighbouring_a(self):
+        for stop1 in self.network.vertices():
+            for stop2 in self.network.vertices():
+                if stop1 in self.network.neighbours(stop2):
+                    self.assertIn(stop2, self.network.neighbours(stop1), msg = f'{stop2} is not a neighbour to {stop1}' )
+
     def test_reversed_dijkstra(self):
         for stop1 in self.network.all_stops():
             for stop2 in self.network.all_stops():
