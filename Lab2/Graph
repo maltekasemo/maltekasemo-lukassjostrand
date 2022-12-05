@@ -14,9 +14,9 @@ class WeightedGraph:
         self._weightlist[(a, b)] = w
 
 class Graph(graphviz.Graph, WeightedGraph):
-    def __init__(self, edgelist: list = None): # edge_list = [(x,y), (z,a)]
+    def __init__(self, edgelist: list = None):
         super().__init__()
-        self.engine = 'neato'
+        self._engine = 'neato'
         self._adjlist = {}
         self._valuelist = {}
         if edgelist:
@@ -29,7 +29,7 @@ class Graph(graphviz.Graph, WeightedGraph):
             self.add_vertex(tuple[1])
 
     def __len__(self):
-        return len(self._valuelist)
+        return len(self._adjlist)
 
     def add_edge(self, a, b):
         if a in self._adjlist:
