@@ -1,21 +1,6 @@
 import graphviz
 
-
-class WeightedGraph:
-    def __init__(self, start=None):
-        self._weightlist = {}
-
-    def get_weight(self, a, b):
-        try:
-            return self._weightlist[(a, b)]
-        except KeyError:
-            return self._weightlist[(b, a)]
-
-    def set_weight(self, a, b, w):
-        self._weightlist[(a, b)] = w
-
-
-class Graph(graphviz.Graph, WeightedGraph):
+class Graph(graphviz.Graph):
     def __init__(self, edgelist: list = None):
         super().__init__()
         self._engine = 'neato'
@@ -86,35 +71,57 @@ class Graph(graphviz.Graph, WeightedGraph):
     def vertices(self):
         return [vertice for vertice in self._valuelist]
 
-    def colour_path(self, path_list: list):
-        new_list = [self.vertices()[a] for a in range(len(self.vertices()))]
-        for i in range(len(path_list)):
-            the_index = new_list.index(path_list[i])
-            self.node(path_list[i]._name, path_list[i]._name,
-                      pos=f'{self.vertices()[the_index]._position[1] * 200},{self.vertices()[the_index]._position[0] * 200}!',
-                      shape='rectangle', width='0.2', labelfontsize='7', fontsize='10', fillcolor='red',
-                      style='filled')
+class WeightedGraph(Graph):
+    def __init__(self, edgelist=None):
+        super().__init__(edgelist)
+        self._weightlist = {}
 
-        for i in range(len(path_list) - 1):
-            self.edge(path_list[i]._name, path_list[i + 1]._name, constraint='false', color='red')
+    def get_weight(self, a, b):
+        try:
+            return self._weightlist[(a, b)]
+        except KeyError:
+            return self._weightlist[(b, a)]
 
-    def render_map(self):
-        edge_list = self.edges()
-        vertices = self.vertices()
-
-        for i in range(len(vertices)):
-            self.node(f"{vertices[i]._name}", f'{vertices[i]._name}',
-                      pos=f'{vertices[i]._position[1] * 200},{vertices[i]._position[0] * 200}!',
-                      shape='rectangle', width='0.2', labelfontsize='7', fontsize='10')
-
-        for edge in edge_list:
-            self.edge(edge[0]._name, edge[1]._name, constraint='false')
-
-        self.render(directory='stations', view=True)
+    def set_weight(self, a, b, w):
+        self._weightlist[(a, b)] = w
 
 def view_shortest(graph, source, target):
-    quickest_path = dijkstra(graph, source, graph.get_weight)
-    graph.colour_path(quickest_path[target]['path'])
+    try:
+        quickest_path = dijkstra(graph, source, graph.get_weight)[target]['path']
+        coloring = {vertice._name: 'red' for vertice in quickest_path}
+        visualize(graph, nodecolours=coloring)
+    except AttributeError:
+        quickest_path = dijkstra(graph, source)[target]['path']
+        coloring = {vertice: 'red' for vertice in quickest_path}
+        visualize(graph, nodecolours=coloring)
+
+def visualize(graph, view='dot', name='mygraph', nodecolours = {}, engine = 'dot'):
+    edge_list = graph.edges()
+    vertices = graph.vertices()
+
+    try:
+        for i in range(len(vertices)):
+            graph.node(f"{vertices[i]._name}", f'{vertices[i]._name}',
+                      pos=f'{vertices[i]._position[1] * 200},{vertices[i]._position[0] * 200}!',
+                      shape='rectangle', width='0.2', labelfontsize='7', fontsize='10',
+                       fillcolor = nodecolours[vertices[i]._name] if vertices[i]._name in nodecolours else 'white', style = 'filled')
+
+        for edge in edge_list:
+            graph.edge(edge[0]._name, edge[1]._name, constraint='false')
+
+        graph.render(directory=name, view=True)
+
+    except AttributeError:
+        for i in range(len(vertices)):
+            graph.node(f"{str(vertices[i])}", f'{str(vertices[i])}',
+                       shape='rectangle', width='0.2', labelfontsize='7', fontsize='10',
+                       fillcolor=nodecolours[vertices[i]] if vertices[i] in nodecolours else 'white',
+                       style='filled')
+
+        for edge in edge_list:
+            graph.edge(str(edge[0]), str(edge[1]), constraint='false')
+
+        graph.render(directory=name, view=True)
 
 
 def dijkstra(graph, source, cost=lambda u, v: 1):
@@ -150,8 +157,6 @@ def dijkstra(graph, source, cost=lambda u, v: 1):
         paths_with_time[stop]['dist'] = path_to_stop[stop]
 
     return paths_with_time
-
-
 
 
 
