@@ -1,4 +1,4 @@
-from tramdata import *
+from Lab1.tramdata import *
 from graphs import *
 import json
 TRAM_FILE = 'tramnetwork.json'
@@ -48,7 +48,7 @@ class TramNetwork(WeightedGraph):
             all_lines = self.all_lines()
             for line in all_lines:
                 line_edge_list = [(all_lines[line].get_stops()[i], all_lines[line].get_stops()[i + 1]) for i in
-                                  range(len(all_lines[line].get_stops()) - 1)]
+                                  range(len(all_lines[line].get_stops()) - 1) if (all_lines[line].get_stops()[i], all_lines[line].get_stops()[i + 1]) not in all_edges]
                 all_edges += line_edge_list
             super().__init__(edgelist= all_edges)
             self._weightlist = {edge: self.transition_time(edge[0], edge[1]) for edge in self.edges()}
@@ -131,6 +131,7 @@ def demo():
 
 if __name__ == '__main__':
     demo()
+
 
 
 
