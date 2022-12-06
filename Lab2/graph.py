@@ -88,7 +88,7 @@ class WeightedGraph(Graph):
 def view_shortest(graph, source, target):
     try:
         quickest_path = dijkstra(graph, source, graph.get_weight)[target]['path']
-        coloring = {vertice._name: 'red' for vertice in quickest_path}
+        coloring = {vertice.get_name(): 'red' for vertice in quickest_path}
         visualize(graph, nodecolours=coloring)
     except AttributeError:
         quickest_path = dijkstra(graph, source)[target]['path']
@@ -101,10 +101,10 @@ def visualize(graph, view='dot', name='mygraph', nodecolours = {}, engine = 'dot
 
     try:
         for i in range(len(vertices)):
-            graph.node(f"{vertices[i]._name}", f'{vertices[i]._name}',
-                      pos=f'{vertices[i]._position[1] * 200},{vertices[i]._position[0] * 200}!',
+            graph.node(f"{vertices[i].get_name()}", f'{vertices[i].get_name()}',
+                      pos=f'{vertices[i].get_position()[1] * 200},{vertices[i].get_position()[0] * 200}!',
                       shape='rectangle', width='0.2', labelfontsize='7', fontsize='10',
-                       fillcolor = nodecolours[vertices[i]._name] if vertices[i]._name in nodecolours else 'white', style = 'filled')
+                       fillcolor = nodecolours[vertices[i].get_name()] if vertices[i].get_name() in nodecolours else 'white', style = 'filled')
 
         for edge in edge_list:
             graph.edge(edge[0]._name, edge[1]._name, constraint='false')
@@ -157,6 +157,7 @@ def dijkstra(graph, source, cost=lambda u, v: 1):
         paths_with_time[stop]['dist'] = path_to_stop[stop]
 
     return paths_with_time
+
 
 
 
