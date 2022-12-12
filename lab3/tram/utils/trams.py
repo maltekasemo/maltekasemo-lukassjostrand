@@ -46,7 +46,7 @@ class TramStops: #CHECK
         return self._position
 
     def set_position(self, lat: float, lon: float): #CHECK
-        self._position = (lat, lon)
+        self._position = (lon, lat)
 
 class TramNetwork(WeightedGraph):
     def __init__(self, lines: dict, stops: dict, times: dict, edgelist: list = None):
@@ -66,7 +66,6 @@ class TramNetwork(WeightedGraph):
             super().__init__(edgelist=edgelist)
             self._weightlist = {edge: self.transition_time(edge[0], edge[1]) for edge in self.edges()}
 
-
     def all_lines(self): #CHECK
         return {line: self._linedict[line] for line in self._linedict}
 
@@ -78,11 +77,24 @@ class TramNetwork(WeightedGraph):
         lon_list = [self._stopdict[stop]._position[1] for stop in self._stopdict]
         return (max(lat_list), max(lon_list), min(lat_list), min(lon_list))
 
-    def geo_distance(self, a, b): #NJA-CHECK
-        try:
-            return distance_between_stops(cheat['stops'], self._stopdict[a], self._stopdict[b])
-        except KeyError:
-            return distance_between_stops(cheat['stops'], self._stopdict[b], self._stopdict[a])
+    def geo_distance(self, a, b):
+            try:
+                lon1 = a.get_position()[0] * pi / 180
+                lon2 = b.get_position()[0] * pi / 180
+                lat1 = a.get_position()[1] * pi / 180
+                lat2 = b.get_position()[1] * pi / 180
+
+                R = 6371.0
+
+                lon_diff = abs(lon1 - lon2)
+                lat_diff = abs(lat1 - lat2)
+
+                a = (sin(lat_diff / 2)) ** 2 + cos(lat1) * cos(lat2) * (sin(lon_diff / 2)) ** 2
+                c = 2 * atan2(sqrt(a), sqrt(1 - a))
+                distance = R * c
+                return round(distance, 4)
+            except KeyError:
+                return None
 
     def line_stops(self, line): #CHECK
         return [stop for stop in self._linedict[line].get_stops()]
@@ -133,6 +145,12 @@ def readTramNetwork(file = TRAM_FILE): #CHECK
 
 def specialize_stops_to_lines(network):
     # TODO: write this function as specified
+
+    """lines_via_stop = [line for line in network['lines'] if stop in network['lines'][line]]
+    #append lines_via_stop to every stop
+
+    lines_between_stops = [line for line in network['lines'] if stop1 in network['lines'][line] and stop2 in network['lines']
+    #add edge for every line that serves between a and b"""
 
     return network
 
