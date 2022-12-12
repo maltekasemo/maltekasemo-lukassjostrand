@@ -68,8 +68,24 @@ class TramNetwork(WeightedGraph):
         lon_list = [self._stopdict[stop]._position[1] for stop in self._stopdict]
         return (max(lat_list), max(lon_list), min(lat_list), min(lon_list))
 
-    def geo_distance(self, a, b): #NJA-CHECK
-        return distance_between_stops(cheat['stops'], self._stopdict[a], self._stopdict[b])
+        def geo_distance(self, a, b):
+            try:
+                lon1 = a.get_position()[0]
+                lon2 = b.get_position()[0]
+                lat1 = a.get_position()[1]
+                lat2 = b.get_position()[1]
+
+                R = 6371.0
+
+                lon_diff = abs(lon1 - lon2)
+                lat_diff = abs(lat1 - lat2)
+
+                a = (sin(lat_diff / 2)) ** 2 + cos(lat1) * cos(lat2) * (sin(lon_diff / 2)) ** 2
+                c = 2 * atan2(sqrt(a), sqrt(1 - a))
+                distance = R * c
+                return round(distance, 4)
+            except KeyError:
+                return None
 
     def line_stops(self, line): #CHECK
         return [stop for stop in self._linedict[line].get_stops()]
