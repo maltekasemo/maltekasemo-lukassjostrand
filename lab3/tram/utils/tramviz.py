@@ -1,6 +1,6 @@
 # visualization of shortest path in Lab 3, modified to work with Django
 
-from .trams import readTramNetwork
+from .trams import readTramNetwork, TramNetwork
 from .graphs import *
 from .color_tram_svg import color_svg_network
 import os
@@ -11,8 +11,7 @@ def show_shortest(dep, dest):
     network = readTramNetwork()
 
     # TODO: replace this mock-up with actual computation using dijkstra.
-    dep = dep
-    dest = dest
+
     departure, destination = getting_objects_by_names(network, dep, dest)
     quickest_path = dijkstra(network, departure, network.get_weight)[destination]['path']
     quickest_path_time = dijkstra(network, departure, network.get_weight)[destination]['dist']
@@ -44,16 +43,15 @@ def show_shortest(dep, dest):
     geopath = 'Shortest: ' + ', '.join(sp) + ', ', str(shortest_path_distance)
 
     def colors(v):
-        if v in qp:
+        if v in qp and v in sp:
             return 'cyan'
-        else:
-            return 'white'
-        if v in sp:
+        elif v in qp:
+            return 'orange'
+        elif v in sp:
             return 'green'
         else:
             return 'white'
-        if v in qp and sp:
-            return 'green'
+
 
     # this part should be left as it is:
     # change the SVG image with your shortest path colors
