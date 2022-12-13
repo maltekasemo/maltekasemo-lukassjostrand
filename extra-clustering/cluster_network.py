@@ -66,8 +66,8 @@ def k_spanning_tree(G, k = 1000):
     lat = [G.nodes[node]['lat'] for node in G.nodes]
     lon = [G.nodes[node]['lon'] for node in G.nodes]
 
-    plt.figure(figsize=(14, 8))
-    plt.scatter(lon, lat, s=2, alpha=0.7)
+    plt.figure(figsize=(16, 10))
+    plt.scatter(lon, lat, s=2)
 
     for edge in edges_without_k_longest:
         connected_lats = [G.nodes[edge[0]]['lat'], G.nodes[edge[1]]['lat']]
@@ -82,7 +82,7 @@ def k_means(data, k = 7):
     kmeans = sk.KMeans(n_clusters = k).fit(data)
     colors = "ygrkmbc"
     for label in kmeans.labels_:
-        plt.scatter(data[i][1], data[i][0], s=2, alpha=0.7, color=colors[label])
+        plt.scatter(data[i][1], data[i][0], s=2, color=colors[label])
         i+=1
     plt.show()
 
@@ -90,14 +90,14 @@ def plot_airports(graph):
     plt.figure(figsize=(16, 10))
     lat = [graph.nodes[node]['lat'] for node in graph.nodes]
     lon = [graph.nodes[node]['lon'] for node in graph.nodes]
-    plt.scatter(lon, lat, s=5, alpha=0.7)
+    plt.scatter(lon, lat, s=3)
     plt.show()
 
 def plot_airports_and_routes(G):
     plt.figure(figsize=(16, 10))
     lat = [G.nodes[node]['lat'] for node in G.nodes]
     lon = [G.nodes[node]['lon'] for node in G.nodes]
-    plt.scatter(lon, lat, s=5, alpha=0.7)
+    plt.scatter(lon, lat, s=3)
 
     for edge in G.edges():
         connected_lats = [G.nodes[edge[0]]['lat'], G.nodes[edge[1]]['lat']]
