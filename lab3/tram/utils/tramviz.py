@@ -1,6 +1,6 @@
 # visualization of shortest path in Lab 3, modified to work with Django
-
-from .trams import readTramNetwork, TramNetwork
+from extra import extraGraph
+from .trams import readTramNetwork
 from .graphs import *
 from .color_tram_svg import color_svg_network
 import os
@@ -9,9 +9,6 @@ from django.conf import settings
 
 def show_shortest(dep, dest):
     network = readTramNetwork()
-
-    # TODO: replace this mock-up with actual computation using dijkstra.
-
     departure, destination = getting_objects_by_names(network, dep, dest)
     quickest_path = dijkstra(network, departure, network.get_weight)[destination]['path']
     quickest_path_time = dijkstra(network, departure, network.get_weight)[destination]['dist']
@@ -58,5 +55,4 @@ def show_shortest(dep, dest):
     color_svg_network(colormap=colors)
     # return the path texts to be shown in the web page
     return timepath, geopath
-
 
