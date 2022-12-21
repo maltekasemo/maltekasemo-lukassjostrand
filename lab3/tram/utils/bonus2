@@ -1,3 +1,5 @@
+#Created my_gbg_tramnet.svg with create_network_picture.py in lab2
+
 import requests
 import json
 from bs4 import BeautifulSoup
