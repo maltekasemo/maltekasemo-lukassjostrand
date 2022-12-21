@@ -4,7 +4,7 @@ import os
 from django.conf import settings
 
 GBG_TRAMNET_SVG = os.path.join(settings.BASE_DIR,
-                        'tram/templates/tram/images/gbg_tramnet.svg')
+                        'tram/templates/tram/images/my_gbg_tramnet.svg')
 
 SHORTEST_PATH_SVG = os.path.join(settings.BASE_DIR,
                         'tram/templates/tram/images/shortest_path.svg')
