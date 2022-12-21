@@ -5,7 +5,6 @@ import math
 import os
 from tram.utils.graphs import WeightedGraph
 from django.conf import settings
-from tramdata import *
 
 
 # path changed from Lab2 version
