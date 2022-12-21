@@ -125,6 +125,11 @@ class TramNetwork(WeightedGraph):
         maxlon = max([s._position[1] for s in stops])
 
         return minlon, minlat, maxlon, maxlat
+    
+def lines_via_stop(lines_dict, stop):
+    lines_via_stop = [line for line in lines_dict if stop in lines_dict[line]]
+    if lines_via_stop:
+        return lines_via_stop
 
 def readTramNetwork(file = TRAM_FILE): #CHECK
     with open(file, 'r') as data:
