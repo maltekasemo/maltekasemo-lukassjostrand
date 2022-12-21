@@ -19,8 +19,8 @@ def create_dict_from_web(html):
         stop_link = f'https://avgangstavla.vasttrafik.se/?source=vasttrafikse-stopareadetailspage&stopAreaGid={stop_id}'
         tuple.append((stop, stop_link))
 
-    dict = dict((stop_name, stop_link) for stop_name, stop_link in tuple)
-    return dict
+    dictionary = dict((stop_name, stop_link) for stop_name, stop_link in tuple)
+    return dictionary
 
 def create_json_file(data, filename = "tramstops_url.json"):
     with open(filename, 'w') as f:
