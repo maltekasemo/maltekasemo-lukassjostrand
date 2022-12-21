@@ -3,7 +3,7 @@ import json
 # imports added in Lab3 version
 import math
 import os
-from .graphs import WeightedGraph
+from tram.utils.graphs import WeightedGraph
 from django.conf import settings
 from tramdata import *
 
@@ -163,5 +163,4 @@ def specialized_transition_time(spec_network, a, b, changetime=10):
 def specialized_geo_distance(spec_network, a, b, changedistance=0.02):
     # TODO: write this function as specified
     return changedistance
-
 
