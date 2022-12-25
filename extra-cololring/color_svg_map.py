@@ -28,7 +28,6 @@ def get_neighbors(codefile=COUNTRY_CODES_FILE, neighborfile=NEIGHBOR_FILE):
     for country in infodict:
         if infodict[country]['Neighbors'] is not None:
             neighbordict[infodict[country]['Code'].lower()] = [infodict[neighbor]['Code'].lower() for neighbor in infodict[country]['Neighbors']]
-
     return neighbordict
 
 def get_map_colors(neighbordict):
