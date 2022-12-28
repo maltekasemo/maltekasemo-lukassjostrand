@@ -2,7 +2,6 @@ import networkx as nx
 import haversine as hs
 import matplotlib.pyplot as plt
 import sklearn.cluster as sk
-import csv
 import numpy as np
 import sys
 
@@ -12,13 +11,13 @@ ROUTES_FILE = 'routes.dat'
 def mk_airportdict(FILE):
     all_airports = {}
     with open(FILE) as file:
-        rows = csv.reader(file, delimiter="\t")
+        rows = file.readlines()
         for line in rows:
             try:
-                id = str(line[0].split(',')[0])
-                name = str(line[0].split(',')[1].strip('"'))
-                lon = float(line[0].split(',')[7])
-                lat = float(line[0].split(',')[6])
+                id = str(line.split(',')[0])
+                name = str(line.split(',')[1].strip('"'))
+                lon = float(line.split(',')[7])
+                lat = float(line.split(',')[6])
                 all_airports[id] = {'name': name, 'lon': lon, 'lat': lat}
             except ValueError:
                 pass
@@ -29,14 +28,14 @@ def mk_routeset(FILE):
     id = 0
     all_routes = {}
     with open(FILE) as file:
-        rows = csv.reader(file, delimiter="\t")
+        rows = file.readlines()
         for line in rows:
             try:
                 id += 1
-                if line[0].split(',')[3] != '\\N':
-                    departing = str(line[0].split(',')[3])
-                if line[0].split(',')[5] != '\\N':
-                    arriving = str(line[0].split(',')[5])
+                if line.split(',')[3] != '\\N':
+                    departing = str(line.split(',')[3])
+                if line.split(',')[5] != '\\N':
+                    arriving = str(line.split(',')[5])
                 all_routes[id] = {'departing': departing, 'arriving': arriving}
             except ValueError:
                 pass
