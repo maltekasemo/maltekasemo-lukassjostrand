@@ -12,12 +12,11 @@ def create_dict_from_web(html):
     tuple = []
 
     for section in soup.find_all('li', attrs = {'class':'mb-1'}):
-        object1 = section.a.text
-        object2 = section.a.text
+        object = section.a.text
         link = section.a['href']
         stop_id = link.split('/')[3]
-        stop = object1.split('\n')[1].replace(',', '').lstrip()
-        zon = object2.split('\n')[3].replace(',', '').lstrip()
+        stop = object.split('\n')[1].replace(',', '').lstrip()
+        zon = object.split('\n')[3].replace(',', '').lstrip()
         stop_link = f'https://avgangstavla.vasttrafik.se/?source=vasttrafikse-stopareadetailspage&stopAreaGid={stop_id}'
         if zon == 'Zon A':
             tuple.append((stop, stop_link))
