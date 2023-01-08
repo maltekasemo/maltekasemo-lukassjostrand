@@ -12,12 +12,15 @@ def create_dict_from_web(html):
     tuple = []
 
     for section in soup.find_all('li', attrs = {'class':'mb-1'}):
-        object = section.a.text
+        object1 = section.a.text
+        object2 = section.a.text
         link = section.a['href']
         stop_id = link.split('/')[3]
-        stop = object.split('\n')[1].replace(',', '').lstrip()
+        stop = object1.split('\n')[1].replace(',', '').lstrip()
+        zon = object2.split('\n')[3].replace(',', '').lstrip()
         stop_link = f'https://avgangstavla.vasttrafik.se/?source=vasttrafikse-stopareadetailspage&stopAreaGid={stop_id}'
-        tuple.append((stop, stop_link))
+        if zon == 'Zon A':
+            tuple.append((stop, stop_link))
 
     dictionary = dict((stop_name, stop_link) for stop_name, stop_link in tuple)
     return dictionary
