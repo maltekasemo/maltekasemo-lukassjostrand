@@ -1,42 +1,70 @@
-import math
-import numpy as np
+from math import sqrt
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
-
-t_span = np.array([0, 30])
-
-class Planet:
-    def __init__(self, x_pos, y_pos, x_velocity, y_velocity):
-        self.mass = 1
-        self.z = np.array([x_pos, y_pos, x_velocity, y_velocity])
-        self.position_vector = np.array([self.z[0], self.z[1]])
-        self.velocity_vector = np.array([self.z[2], self.z[3]])
-        self.k = 1
-
-    def rorelsemangd(self):
-         return self.mass * self.velocity_vector
-
-    def rorelsemangdsmoment(self):
-        return np.cross(self.position_vector, self.velocity_vector)
-
-    def kinetisk_energi(self):
-        return (self.mass / 2) * (self.z[0]^2 + self.z[1]^2)
-
-    def lagesenergi(self):
-        return -self.k / (math.sqrt(self.z[0] ^ 2 + self.z[1] ^ 2))
-
-    def all_energi(self):
-        return self.kinetisk_energi() + self.lagesenergi()
-
-    def acceleration(self):
-        return self.lagesenergi() / self.mass
-
-planet = Planet(1, 0, 0, 1)
+import numpy as np
 
 
-solution = solve_ivp(np.array[planet.velocity_vector, np.array([planet.z[0] / np.linalg.norm(planet.position_vector),
-                                               planet.z[0] / np.linalg.norm(planet.position_vector)])], t_span, planet.z)
+t_span = (0, 30)
+start = [1, 0, 0, 1/2]
 
-plt.plot(solution.t, solution[0])
-plt.plot(solution.t, solution[1])
-plt.savefig("map.png")
+def f(t, r):
+    #0 x position
+    #1 y position
+    #2 velocity in x
+    #3 velocity in y
+    x, y, vx, vy = r
+
+    fvx = - (x / (x**2 + y**2) ** (3 / 2))
+    fvy = - (y / (x**2 + y**2) ** (3 / 2))
+
+    return (vx, vy, fvx, fvy)
+
+    #0 x velocity
+    #1 y velocity
+    #2 acceleration in x
+    #3 acceleration in y
+
+sol = solve_ivp(f, t_span, start, t_eval = np.linspace(0, 30, 300))
+
+x, y, vx, vy = sol.y
+
+# Calculate potential energy
+potential_energy = - 1 / np.sqrt(x**2 + y**2)
+
+# Calculate kinetic energy
+kinetic_energy = 0.5 * (vx**2 + vy**2)
+
+# Calculate total energy
+total_energy = kinetic_energy + potential_energy
+
+# Plot x-y trajectory
+plt.figure(figsize=(8, 6))
+plt.plot(x, y)
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.title('Trajectory of x-y')
+
+# Plot potential energy
+plt.figure(figsize=(8, 6))
+plt.plot(sol.t, potential_energy)
+plt.xlabel('Time')
+plt.ylabel('Potential Energy')
+plt.title('Potential Energy vs. Time')
+
+# Plot kinetic energy
+plt.figure(figsize=(8, 6))
+plt.plot(sol.t, kinetic_energy, label='Kinetic Energy')
+plt.xlabel('Time')
+plt.ylabel('Kinetic Energy')
+plt.title('Kinetic Energy vs. Time')
+plt.legend()
+
+# Plot total energy
+plt.figure(figsize=(8, 6))
+plt.plot(sol.t, total_energy, label='Total Energy')
+plt.xlabel('Time')
+plt.ylabel('Total Energy')
+plt.title('Total Energy vs. Time')
+plt.legend()
+
+plt.show()
