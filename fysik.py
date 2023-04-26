@@ -1,11 +1,10 @@
-from math import sqrt
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 import numpy as np
 
 
 t_span = (0, 300) #antalet sekunder som varvas
-start = [1, 0, 0, sqrt(2)] #startens förutsättningar
+start = [1, 0, 0, 2**0.5] #startens förutsättningar
 
 def f(t, state): #the function takes a vector of the actual state of the particles.
     # It returns the velcoity and acceleration acting on the particle
@@ -16,8 +15,9 @@ def f(t, state): #the function takes a vector of the actual state of the particl
     #3 velocity in y
     x, y, vx, vy = state
 
-    ax = - x / (x ** 2 + y ** 2) ** (3/2)
-    ay = - y / (x ** 2 + y ** 2) ** (3/2)
+    r = np.sqrt(x ** 2 + y ** 2)
+    ax = -x / r ** 3
+    ay = -y / r ** 3
 
     return (vx, vy, ax, ay)
 
@@ -37,7 +37,7 @@ potential_energy = - 1 / np.sqrt(x**2 + y**2)
 kinetic_energy = (vx**2 + vy**2) / 2
 
 # Calculate total energy
-total_energy = kinetic_energy + potential_energy
+total_energy = potential_energy + kinetic_energy
 
 # Plot x-y trajectory
 plt.figure(figsize=(8, 6))
@@ -69,5 +69,10 @@ plt.ylabel('Total Energy')
 plt.title('Total Energy vs. Time')
 plt.legend()
 
+plt.plot(sol.t, potential_energy, label='Potential Energy')
+plt.plot(sol.t, kinetic_energy, label='Kinetic Energy')
+plt.plot(sol.t, total_energy, label='Total Energy')
+plt.legend()
 plt.show()
 
+plt.show()
