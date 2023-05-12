@@ -1,0 +1,99 @@
+import time
+from w1thermsensor import W1ThermSensor
+from w1thermsensor import errors
+import csv
+import urllib.request
+from email.message import EmailMessage
+import ssl
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+import os
+
+
+def check_connection(host='http://google.com'):
+    try:
+        urllib.request.urlopen(host)  # Python 3.x
+        print('Connected!')
+        return True
+    except:
+        print('Offline!')
+        return False  # test
+
+
+def main_loop(sensor):
+    time.sleep(30)
+    if check_connection():
+        send_mail()
+    else:
+        collect_data(sensor)
+
+
+def send_mail():
+    filename = '/home/group1/Desktop/data.csv'
+    attachment = open(filename, 'rb')
+    attachment_package = MIMEBase('application', 'octet-stream')
+    attachment_package.set_payload((attachment).read())
+    encoders.encode_base64(attachment_package)
+    attachment_package.add_header('Content-Disposition', 'attachment; filename = ' + filename)
+
+    email_sender = 'oceansentinel.user@gmail.com'
+    email_password = 'shrnzgkefspeutnp'
+    email_receiver = 'oceansentinel.data@gmail.com'
+
+    subject = 'Data från Python'
+    body = 'Daniel har en klitoris under sin pung'
+
+    em = MIMEMultipart()
+    em['From'] = email_sender
+    em['To'] = email_receiver
+    em['Subject'] = subject
+
+    em.attach(MIMEText(body, 'plain'))
+    em.attach(attachment_package)
+
+    context = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, email_receiver, em.as_string())
+
+    os.remove('/home/group1/Desktop/data.csv')
+
+    print('Email sent!')
+
+
+def collect_data(sensor):
+    time.sleep(5)
+
+    while True:
+        port = "/dev/ttyAMA0"
+        ser = serial.Serial(port, baudrate=9600, timeout=0.5)
+        dataout = pynmea2.NMEAStreamReader()
+        newdata = ser.readline()
+        newdata_str = newdata.decode('ISO-8859-1')
+        temp = sensor.get_temperature()
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+
+        if newdata_str[0:6] == "$GPRMC":
+            newmsg = pynmea2.parse(newdata_str)
+            lat = newmsg.latitude
+            lng = newmsg.longitude
+            with open('/home/group1/Desktop/data.csv', 'a', newline='') as file:
+                writer = csv.writer(file)
+                data = [temp, lat, lon, timestamp]
+                writer.writerow(data)
+
+
+try:
+    sensor = W1ThermSensor()
+    main_loop(sensor)
+except errors.SensorNotReadyError:
+    print('Sensor is not ready')
+    pass
+
+except errors.NoSensorFoundError:
+    print('Sensor is not found')
+    pass
