@@ -26,7 +26,24 @@ while True:
 		print(gps)
 
 
+import time
+import json
+import os
+from w1thermsensor import W1ThermSensor
+import serial
+import pynmea2
 
+sensor = W1ThermSensor()
+file_path = os.path.join(os.environ['HOME'], 'Desktop', 'data.json')
+
+while True:
+    port = "/dev/ttyAMA0"
+    ser = serial.Serial(port, baudrate=9600, timeout=0.5)
+    dataout = pynmea2.NMEAStreamReader()
+    newdata = ser.readline()
+    newdata_str = newdata.decode('ISO-8859-1') 
+    print(newdata_str)
+    
 
 
 import serial
